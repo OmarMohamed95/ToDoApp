@@ -1,0 +1,167 @@
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    margin: 0;
+    background: rgb(2,0,36);
+    background: linear-gradient(333deg, rgba(2,0,36,1) 0%, rgba(245,73,199,1) 0%, rgba(122,233,255,1) 100%);
+    /* to avoid background repeat make sure that background-repeat and background-attachment come after your background rules */
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+
+.logo{
+    font-size: 25px;
+    font-weight: 800;
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 25px;
+}
+
+.validation-error{
+    color: red;
+}
+
+.success_message{
+    color: green;
+}
+
+.body-con{
+    background-color: white;
+    border-radius: 30px;
+    padding: 1px 60px;
+    min-height: 590px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+.sidebar-logo{
+    font-size: 25px;
+    font-weight: 800;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.sidebar-icon{
+    margin-right: 5px;
+    color: #5f6368;
+}
+
+.no-sidebar-body-con{
+    background-color: white;
+    border-radius: 30px;
+    padding: 1px 60px;
+    min-height: 500px;
+    margin-top: 25px;
+}
+
+.sidebar{
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 23%;
+    background-color: white;
+}
+
+.sidebar-profile-links{
+    text-align: center;
+}
+
+.sidebar-profile-links a{
+    display: block;
+}
+
+.sidebar-menu{
+    padding: 35px 0px 1px 0px;
+}
+
+.sidebar-menu li{
+    list-style: none;
+    margin-bottom: 25px;
+    margin-left: 40px;
+    width: 100%;
+}
+
+.sidebar-menu li a{
+    color: #5f6368;
+    text-decoration: none;
+    background-color: transparent;
+    font-weight: bold;
+}
+
+.sidebar-menu li a:hover{
+    color: #0056b3;
+    text-decoration: none;
+    background-color: transparent;
+}
+
+.sidebar-notification{
+    padding: 15px 0px 15px 30px;
+    border: 1px solid #ddd;
+}
+
+.sidebar-account{
+    border-bottom: 1px solid #ddd;
+    height: 40%;
+    padding-top: 40px;
+}
+
+.sidebar-account img{
+    border: 3px solid #ddd;
+    border-radius: 50%;
+    margin: 0px 0px 15px 28%;
+}
+
+/* .sidebar-account a{
+    display: block;
+    margin-left: 60px;
+    margin-top: 5px;
+} */
+
+.con{
+	background-color: #F7F8F9;
+    border: 1px solid #F2F3F3;
+    padding: 10px;
+    border-radius: 10px;
+    height: auto;
+}
+
+.task-con{
+	background-color: #F7F8F9;
+    border: 1px solid #F2F3F3;
+    padding: 10px;
+    border-radius: 10px;
+    height: auto;
+    display: flex;
+}
+
+.task-checkbox{
+    display: inline;
+    margin-right: 20px;
+}
+
+.task-checkbox input[type='checkbox']{
+    width: 30px;
+    height: 30px;
+}
+
+.task-data-con{
+    display: inline-block;
+}
+
+.task-title{
+    margin-bottom: 5px;
+}
+
+.imageStyle{
+    height: 50px;
+    width: 50px;
+}
+
+.inline-display{
+    display: inline;
+}
