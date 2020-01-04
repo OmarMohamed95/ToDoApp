@@ -61,7 +61,6 @@ export default {
             })
         },
         pushNotification: context => {
-            console.log(context.getters.getAppPermission);
             if(context.getters.getAppPermission)
             {
                 context
