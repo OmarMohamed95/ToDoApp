@@ -15,10 +15,10 @@
         </ul>
         <div class="mt-3 sidebar-notification">
             <div v-if="appPermission">
-                Notification <button class="btn btn-primary" @click="toggleNotificationBtn" id="notificationBtn">Active</button>
+                <font-awesome-icon class="sidebar-icon fa-lg" :icon="['fas', 'bell']" />Notification <button class="btn btn-primary" @click="toggleNotificationBtn" id="notificationBtn">Active</button>
             </div>
             <div v-else>
-                Notification <button class="btn btn-secondary" @click="toggleNotificationBtn" id="notificationBtn">Inactive</button>
+                <font-awesome-icon class="sidebar-icon fa-lg" :icon="['fas', 'bell']" />Notification <button class="btn btn-secondary" @click="toggleNotificationBtn" id="notificationBtn">Inactive</button>
             </div>
         </div>
         <div>
