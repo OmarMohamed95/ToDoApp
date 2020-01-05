@@ -82,8 +82,9 @@ export default {
             {
                 if(notificationBtn.innerHTML === 'Active')
                 {
-                    notificationBtn.innerHTML =  'Inactive'
-                    this.$store.dispatch('updateAppPermissionCookie', false)
+                    notificationBtn.innerHTML =  'Inactive';
+                    this.$store.dispatch('updateAppPermissionCookie', false);
+                    this.$store.dispatch('clearNotifications');
 
                 }
                 else if(notificationBtn.innerHTML === 'Inactive')

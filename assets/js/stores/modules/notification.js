@@ -3,6 +3,7 @@ import axios from "axios";
 export default {
     state: {
         tasks: {},
+        notifications: Number,
         appPermission: false,
         browserPermission: false,
         showDeniedMessage: false,
@@ -39,6 +40,12 @@ export default {
         HIDE_DENIED_BROWSER_PERMISSION_MESSAGE: (state) => {
             state.showDeniedMessage = false; 
         },
+        SET_TIME_OUT: (state, timeout) => {
+            state.notifications = timeout; 
+        },
+        CLEAR_TIME_OUT: (state) => {
+            clearTimeout(state.notifications);             
+        },
     },
     actions: {
         notify: (context, {id, title}) => {
@@ -66,8 +73,8 @@ export default {
                 context
                 .dispatch("getUnnotifiedTasks")
                 .then(res => {
-
-                    clearTimeout(context.state.notifications);
+                    
+                    context.dispatch('clearNotifications');
                     
                     for (let [k, v] of Object.entries(res)){
                         
@@ -78,9 +85,10 @@ export default {
                         let title = v.title;
                         let id = v.id;
 
-                        context.state.notifications = setTimeout(() => {
+                        let timeout = setTimeout(() => {
                             context.dispatch("notify", {id, title})
                         }, runAfter);
+                        context.commit('SET_TIME_OUT', timeout);
                     }
 
                 })
@@ -129,6 +137,9 @@ export default {
         },
         hideDeniedPermissionMessage: (context) => {
             context.commit('HIDE_DENIED_BROWSER_PERMISSION_MESSAGE')
+        },
+        clearNotifications: (context) => {
+            context.commit('CLEAR_TIME_OUT');
         },
     },
 }
