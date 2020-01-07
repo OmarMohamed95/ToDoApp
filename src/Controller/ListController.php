@@ -37,7 +37,7 @@ class ListController extends AbstractFOSRestController
      */
     public function getAllLists()
     {
-        $results = $this->cache->cache('all-lists', 120, ['all-lists'], function(){
+        $results = $this->cache->cache('all-lists', 120, ['all-cached-values', 'all-lists'], function(){
 
             return $results = $this->listRepo->findAll();
 
