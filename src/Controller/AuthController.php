@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\UserService;
+use App\Util\CacheInterface;
 
 /**
  * @Route("/api/")
@@ -65,8 +66,10 @@ class AuthController extends AbstractFOSRestController
     /**
      * @Route("logout", name="logout", methods={"GET"})
      */
-    public function logout()
+    public function logout(CacheInterface $redisCache)
     {
+        $redisCache->invalidateCache(['all-cached-values']);
+
         $this->response->headers->clearCookie('BEARER');
         $this->response->headers->clearCookie('REFRESH_TOKEN');
         $this->response->send();
