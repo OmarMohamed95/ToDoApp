@@ -131,12 +131,44 @@ body {
 }
 
 .task-con{
-	background-color: #F7F8F9;
-    border: 1px solid #F2F3F3;
-    padding: 10px;
+	background-color: white;
+    padding: 20px 10px 10px 10px;
     border-radius: 10px;
     height: auto;
     display: flex;
+    margin-top: 30px;
+    box-shadow: 0px 0px 15px 6px #ddd;
+}
+
+.task-con .priority{
+	float: right;
+    padding: 3px 6px 3px 6px;
+    margin-bottom: 0px !important;
+}
+
+.task-con .note{
+	margin-top: 12px;
+}
+
+.task-con .list-title{
+	border: 1px solid #ddd;
+    width: auto;
+    background-color: black;
+    color: white;
+    font-weight: bold;
+    float: right;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.task-con .run-at{
+	font-size: 13px;
+    font-weight: bold;
+}
+
+.task-con:hover{
+    box-shadow: 0px 0px;
+    border: 1px solid #f5f5f5;
 }
 
 .task-checkbox{
@@ -151,6 +183,8 @@ body {
 
 .task-data-con{
     display: inline-block;
+    width: 100%;
+    padding-right: 40px;
 }
 
 .task-title{
