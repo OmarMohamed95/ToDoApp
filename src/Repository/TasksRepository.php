@@ -23,11 +23,16 @@ class TasksRepository extends ServiceEntityRepository
     /**
      * @return Tasks[] Returns an array of Tasks objects
      */
-    public function getAllUnnotifiedTasks()
+    public function getAllUnnotifiedTasks($id)
     {
         return $this->createQueryBuilder('t')
+            ->select('t')
+            ->join(Lists::class, 'l', 'WITH', 't.list = l.id')
+            ->where('l.user = ?1')
             ->andWhere('t.is_notified = 0')
+            ->andWhere('t.is_done = 0')
             ->orderBy('t.run_at', 'ASC')
+            ->setParameter(1, $id)
             ->getQuery()
             ->getResult()
         ;

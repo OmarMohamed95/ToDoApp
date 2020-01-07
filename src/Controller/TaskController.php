@@ -68,7 +68,7 @@ class TaskController extends AbstractFOSRestController
     {
         $results = $this->cache->cache('unnotified-tasks', 120, ['all-cached-values', 'unnotified-tasks'], function(){
 
-            return $results = $this->tasksRepo->getAllUnnotifiedTasks();
+            return $results = $this->tasksRepo->getAllUnnotifiedTasks($this->user->getCurrentUser()->getId());
             
         });
         
