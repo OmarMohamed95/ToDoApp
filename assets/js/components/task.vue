@@ -7,19 +7,20 @@
         <div v-if="loading">
             <p class="text-center"><font-awesome-icon class="fa-pulse fa-3x" :icon="['fas', 'spinner']" /></p>
         </div>
-        <div v-else-if="res.length" class="">
-            <div :key="k" v-for="(i,k) in res" class="task-con mb-3">
+        <div v-else-if="tasks.length" class="">
+            <div :key="k" v-for="(task,k) in tasks" class="task-con mb-3">
                 <div class="task-checkbox">
-                    <input type="checkbox" name="is_done" :value="i.id">
+                    <input type="checkbox" name="is_done" :value="task.id">
                 </div>
                 <div class="task-data-con">
-                    <p class="font-weight-bold task-title">{{ i.title }}</p>
-                    <p class="">{{ i.note }}</p>
-                    <p class="">{{ i.priority }}</p>
-                    <p class="">{{ i.runAt }}</p>
+                    <p class="font-weight-bold task-title">{{ task.title }}</p>
+                    <p class="">{{ task.note }}</p>
+                    <p class="">{{ task.list.title }}</p>
+                    <p class="">{{ task.priority }}</p>
+                    <p class="">{{ task.runAt }}</p>
                     <hr>
                     <!-- toLocaleString(): convert the date given to the Date object to the local timezone -->
-                    <p class="">{{ new Date(i.createdAt).toLocaleString() }}</p>
+                    <p class="">{{ new Date(task.createdAt).toLocaleString() }}</p>
                 </div>
             </div>
         </div>
@@ -39,7 +40,7 @@ export default {
     props:['uploads_base_url'],
     data: function(){
         return{
-            res: {},
+            tasks: {},
             loading: true,
         }
     },
@@ -51,7 +52,7 @@ export default {
             .then((response) => {
                 this.loading = false;
                 //check if this working fine when the status is 204
-                this.res = (response.status === 204) ? response.text() : response.data;
+                this.tasks = (response.status === 204) ? response.text() : response.data;
             })
             .catch((error) => {
                 throw error;
