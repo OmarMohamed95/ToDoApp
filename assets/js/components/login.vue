@@ -61,6 +61,8 @@ export default {
             .then(res => {
                 if(res)
                 {
+                    this.$store.dispatch('pushNotification');
+
                     this.$router.push({name: 'task'});
                 }
             })
