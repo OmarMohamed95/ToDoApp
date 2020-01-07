@@ -18,6 +18,7 @@ use FOS\RestBundle\Controller\Annotations\FileParam;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\Serializer\SerializerService;
+use App\Service\UserService;
 
 class TaskController extends AbstractFOSRestController
 {
@@ -25,13 +26,15 @@ class TaskController extends AbstractFOSRestController
     private $tasksRepo;
     private $serializer;
     private $cache;
+    private $user;
 
-    public function __construct(EntityManagerInterface $entityManager, TasksRepository $tasksRepo, SerializerService $serializer, CacheInterface $redisCache)
+    public function __construct(EntityManagerInterface $entityManager, TasksRepository $tasksRepo, SerializerService $serializer, CacheInterface $redisCache, UserService $user)
     {
         $this->entityManager = $entityManager;
         $this->tasksRepo = $tasksRepo;
         $this->serializer = $serializer->init();
         $this->cache = $redisCache;
+        $this->user = $user;
     }
 
     /**
@@ -41,7 +44,7 @@ class TaskController extends AbstractFOSRestController
     {
         $results = $this->cache->cache('all-tasks', 120, ['all-cached-values', 'all-tasks'], function(){
 
-            return $results = $this->tasksRepo->findAll();
+            return $results = $this->tasksRepo->getAllByUser($this->user->getCurrentUser()->getId());
 
         });
         
@@ -54,9 +57,6 @@ class TaskController extends AbstractFOSRestController
             $statusCode = 204;
         }
 
-        // var_dump($results);
-        // $response = $this->serializer->serialize($results, 'json');
-        // return new Response($results, $statusCode);
         $view = $this->view($results, $statusCode);
         return $this->handleView($view);
     }
@@ -130,15 +130,12 @@ class TaskController extends AbstractFOSRestController
             $tasks->setPriority($priority);
             $tasks->setRunAt($runAt);
 
-            // $lists->addTask($tasks);
 
-            // $this->entityManager->persist($listObject);
             $this->entityManager->persist($tasks);
             $this->entityManager->flush();
             
             $response = [
                 'success' => 'task has been added successfully!',
-                // 'task' => $tasks,
             ];
             
             // check if the tag or the key exists first before invalidating the cache
