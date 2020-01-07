@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Tasks;
+use App\Entity\Lists;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -22,12 +23,27 @@ class TasksRepository extends ServiceEntityRepository
     /**
      * @return Tasks[] Returns an array of Tasks objects
      */
-    
     public function getAllUnnotifiedTasks()
     {
         return $this->createQueryBuilder('t')
             ->andWhere('t.is_notified = 0')
             ->orderBy('t.run_at', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Tasks[] Returns an array of Tasks objects
+     */
+    public function getAllByUser($id)
+    {
+        return $this->createQueryBuilder('t')
+            ->select('t')
+            ->join(Lists::class, 'l', 'WITH', 't.list = l.id')
+            ->where('l.user = ?1')
+            ->orderBy('t.run_at', 'DESC')
+            ->setParameter(1, $id)
             ->getQuery()
             ->getResult()
         ;
