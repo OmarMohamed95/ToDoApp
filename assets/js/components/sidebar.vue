@@ -48,6 +48,9 @@ export default {
     },
     methods: {
        logout() {
+           
+           this.$store.dispatch('clearNotifications');
+
            this.$store.dispatch('logout')
            .then(res => {
                if(res.status === 200 && res.data.message === 'logged out successfully')
