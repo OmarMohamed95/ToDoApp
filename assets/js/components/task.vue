@@ -13,14 +13,17 @@
                     <input type="checkbox" name="is_done" :value="task.id">
                 </div>
                 <div class="task-data-con">
+                    <p v-if="task.priority === 4" class="priority alert alert-danger">VERY HIGH</p>
+                    <p v-if="task.priority === 3" class="priority alert alert-warning">HIGH</p>
+                    <p v-if="task.priority === 2" class="priority alert alert-success">MEDIUM</p>
+                    <p v-if="task.priority === 1" class="priority alert alert-primary">NORMAL</p>
                     <p class="font-weight-bold task-title">{{ task.title }}</p>
-                    <p class="">{{ task.note }}</p>
-                    <p class="">{{ task.list.title }}</p>
-                    <p class="">{{ task.priority }}</p>
-                    <p class="">{{ task.runAt }}</p>
+                    <p class="note">{{ task.note }}</p>
                     <hr>
+                    <p class="list-title">{{ task.list.title }}</p>
+                    <p class="run-at"><font-awesome-icon class="fa-lg" :icon="['fas', 'clock']" /> {{ new Date(task.runAt).toDateString() + ', ' + new Date(task.runAt).toLocaleTimeString() }}</p>
                     <!-- toLocaleString(): convert the date given to the Date object to the local timezone -->
-                    <p class="">{{ new Date(task.createdAt).toLocaleString() }}</p>
+                    <!-- <p class="">{{ new Date(task.createdAt).toLocaleString() }}</p> -->
                 </div>
             </div>
         </div>
