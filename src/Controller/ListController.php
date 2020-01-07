@@ -16,6 +16,7 @@ use FOS\RestBundle\Controller\Annotations\RequestParam;
 use FOS\RestBundle\Controller\Annotations\FileParam;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Service\UserService;
 
 class ListController extends AbstractFOSRestController
 {
@@ -23,13 +24,15 @@ class ListController extends AbstractFOSRestController
     private $entityManager;
     private $serializer;
     private $cache;
+    private $user;
 
-    public function __construct(ListsRepository $listRepo, EntityManagerInterface $entityManager, SerializerService $serializer, CacheInterface $redisCache)
+    public function __construct(ListsRepository $listRepo, EntityManagerInterface $entityManager, SerializerService $serializer, CacheInterface $redisCache, UserService $user)
     {
         $this->listRepo = $listRepo;
         $this->entityManager = $entityManager;
         $this->serializer = $serializer->init();
         $this->cache = $redisCache;
+        $this->user = $user;
     }
 
     /**
@@ -39,7 +42,7 @@ class ListController extends AbstractFOSRestController
     {
         $results = $this->cache->cache('all-lists', 120, ['all-cached-values', 'all-lists'], function(){
 
-            return $results = $this->listRepo->findAll();
+            return $results = $this->listRepo->findBy(['user' => $this->user->getCurrentUser()->getId()]);
 
         });
 
