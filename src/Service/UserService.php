@@ -116,7 +116,11 @@ class UserService extends AbstractController
         return ['statusCode' => $this->statusCode, 'message' => $this->message];
     }
 
-    public function getCurrentUser($data)
+    /**
+     * @param data properties you need from the user object
+     * @return user the user object  
+     */
+    public function getCurrentUser($data = null)
     {
         $token = $this->tokenStorage->getToken();
         if ($token) {
@@ -130,6 +134,10 @@ class UserService extends AbstractController
                     $userData[$k] = $user->$v();
                 }
                 return $userData;
+            } 
+            else
+            {
+                return $user;
             }
 
         } else {
