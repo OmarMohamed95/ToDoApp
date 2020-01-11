@@ -130,6 +130,21 @@ body {
     height: auto;
 }
 
+.sort-droplist{
+    height: 35px;
+    padding-left: 10px;
+    border-radius: 20px;
+}
+
+.sort-droplist:focus{
+    outline: none;
+}
+
+.tasks-group-title{
+    font-size: 23px;
+    font-weight: bold;
+}
+
 .task-con{
 	background-color: white;
     padding: 20px 10px 10px 10px;
@@ -138,6 +153,11 @@ body {
     display: flex;
     margin-top: 30px;
     box-shadow: 0px 0px 15px 6px #ddd;
+}
+
+.task-con:hover{
+    box-shadow: 0px 0px 15px 6px #A4A0A0;
+    /* border: 1px solid #f5f5f5; */
 }
 
 .task-con .priority{
@@ -164,11 +184,6 @@ body {
 .task-con .run-at{
 	font-size: 13px;
     font-weight: bold;
-}
-
-.task-con:hover{
-    box-shadow: 0px 0px;
-    border: 1px solid #f5f5f5;
 }
 
 .task-checkbox{
