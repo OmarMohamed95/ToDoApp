@@ -3,13 +3,13 @@
     <h1 class="mt-5">Tasks</h1>
     <div>
         <select name="sort" class="sort-droplist mt-5 col-md-4" v-model="sortKey" @change="sortLink($event)">
-            <option value hidden selected>SORT BY</option>
+            <option value hidden>SORT BY</option>
             <option value="run_at/desc">RUN AT: NEW TO OLD</option>
             <option value="run_at/asc">RUN AT: OLD TO NEW</option>
             <option value="priority/asc">PRIORITY: HIGH TO LOW</option>
             <option value="priority/desc">PRIORITY: LOW TO HIGH</option>
         </select>
-        <router-link to="/task/add" class="btn btn-outline-primary mb-3 col-md-2 offset-md-5">Add +</router-link>
+        <router-link to="/task/add" class="btn btn-outline-primary mb-3 col-md-2 offset-md-5" style="border-radius: 20px">Add +</router-link>
         <hr>
         <div v-if="loading">
             <p class="text-center"><font-awesome-icon class="fa-pulse fa-3x" :icon="['fas', 'spinner']" /></p>
@@ -94,8 +94,21 @@ export default {
             });
         },
         sortLink: function (event) {
+            this.setSelectedInSession();
             this.$router.push(`/task/${event.target.value}`)
         },
+        setSelectedInSession: function(){
+            sessionStorage.setItem('tasks-sorting-id', event.target.value)
+        },
+        selectOption: function () {
+            let value = sessionStorage.getItem('tasks-sorting-id');
+            document.querySelector(`[value='${value}']`).selected = true;
+        },
+        disableOption: function () {
+            let value = sessionStorage.getItem('tasks-sorting-id');
+            document.querySelector(`[value='${value}']`).disabled = true;
+        },
+
     //     getTasksByPriorityDesc: function(){
     //         axios.get('http://127.0.0.1:8000/api/task/priority', {
     //             params: {
@@ -112,23 +125,25 @@ export default {
     },
     computed: {
         sortedTasks: function () {
-            if(this.$route.params.sort === 'priority')
+            if(this.$route.params.sort === 'priority' && this.$route.params.order === 'desc')
             {
-                if(this.$route.params.order === 'desc')
-                {
-                    return this.tasksPriorityDesc;
-                }
-                else if(this.$route.params.order === 'asc')
-                {
-                    return this.tasksPriorityAsc;
-                }
+                return this.tasksPriorityDesc;
+            }
+            else if(this.$route.params.sort === 'priority' && this.$route.params.order === 'asc')
+            {
+                return this.tasksPriorityAsc;
             }
             else if(this.$route.params.sort === 'run_at' && this.$route.params.order === 'asc')
             {
                 return this.tasksRunAtAsc;
             }
+            else if(this.$route.params.sort === 'run_at' && this.$route.params.order === 'desc')
+            {
+                return this.tasks
+            }
             else
             {
+                sessionStorage.removeItem('tasks-sorting-id')
                 return this.tasks
             }
         },
@@ -152,6 +167,10 @@ export default {
         this.getTasksByDateDesc();
         // this.getTasksByPriorityDesc();
     },
+    updated() {
+        this.selectOption();
+        this.disableOption();
+    }
 }
 </script>
 
