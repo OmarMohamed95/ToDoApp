@@ -55,7 +55,7 @@ class UserService extends AbstractController
     {
         $this->username = trim($credentials['username']);
         $this->email = trim($credentials['email']);
-        $this->password = $credentials['password'] ?? $this->password;
+        $this->password = trim($credentials['password']) ?? trim($this->password);
         $this->image = $credentials['image'] ?? $this->image;
         $this->role = $credentials['role'] ?? $this->role;
         $this->source = $credentials['source'] ?? $this->source;
