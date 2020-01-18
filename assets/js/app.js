@@ -115,6 +115,9 @@ axios.interceptors.response.use(
 
       return requestSubscribers;
     }
+
+    return Promise.reject(err)
+
   }
 );
 
