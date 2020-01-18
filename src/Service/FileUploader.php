@@ -51,8 +51,6 @@ class FileUploader
         } catch (FileException $e) {
             
         }
-
-        return $this;
     }
 
     private function setFileName($fileName)
