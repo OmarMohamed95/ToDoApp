@@ -28,6 +28,8 @@ services:
 
     App\Service\UserService:
                     
+    App\Service\ValidationService:
+
     App\Service\RedisCache: ~
     App\Util\CacheInterface: '@App\Service\RedisCache'
     
@@ -36,6 +38,11 @@ services:
         arguments: ['%lexik_jwt_authentication.token_ttl%']
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess, priority: -2 }
+
+    acme_api.event.authentication_failure_listener:
+        class: App\Listeners\AuthenticationFailureListener
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_failure, method: onAuthenticationFailureResponse }
 
 
     App\Listeners\RefreshTokenListener:
