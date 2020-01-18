@@ -59,8 +59,8 @@ const routes = [
   { path: '/category/add', name: 'categoryAdd', component: categoryAdd },
   { path: '/list', name: 'list', component: list },
   { path: '/list/add', name: 'listAdd', component: listAdd },
-  { path: '/task/:sort?/:order?', name: 'task', component: task, alias: '/task' },
   { path: '/task/add', name: 'taskAdd', component: taskAdd },
+  { path: '/task/:sort?/:order?', name: 'task', component: task, alias: '/task' },
   { path: '/register', name: 'register', component: register },
   { path: '/login', name: 'login', component: login },
 ]
