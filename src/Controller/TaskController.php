@@ -12,13 +12,14 @@ use App\Repository\TasksRepository;
 use App\Util\CacheInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\RequestParam;
 use FOS\RestBundle\Controller\Annotations\FileParam;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\Serializer\SerializerService;
 use App\Service\UserService;
+use App\Service\ValidationService;
 
 class TaskController extends AbstractFOSRestController
 {
@@ -109,7 +110,7 @@ class TaskController extends AbstractFOSRestController
      * @RequestParam(name="priority", nullable=true)
      * @RequestParam(name="run_at", nullable=false)
      */
-    public function add(ParamFetcher $paramFetcher)
+    public function add(ParamFetcher $paramFetcher, ValidatorInterface $validator, ValidationService $validationService)
     {
         $tasks = new Tasks();
 
@@ -122,37 +123,34 @@ class TaskController extends AbstractFOSRestController
         
         $lists = $this->getDoctrine()->getRepository(Lists::class)->find($list);
 
-        if($title)
+        $tasks->setTitle(trim($title));
+        $tasks->setNote(trim($note));
+        $tasks->setList($lists);
+        $tasks->setPriority($priority);
+        $tasks->setRunAt($runAt);
+
+        $errors = $validator->validate($tasks);
+
+        if(count($errors) > 0)
         {
-            $tasks->setTitle($title);
-            $tasks->setNote($note);
-            $tasks->setList($lists);
-            $tasks->setPriority($priority);
-            $tasks->setRunAt($runAt);
+            $violations = $validationService->identifyErrors($errors);
 
-
-            $this->entityManager->persist($tasks);
-            $this->entityManager->flush();
-            
-            $response = [
-                'success' => 'task has been added successfully!',
-            ];
-            
-            // check if the tag or the key exists first before invalidating the cache
-            $this->cache->invalidateCache(['all-tasks', 'unnotified-tasks']);
-            
-            $view = $this->view($response, 200);
-            
+            $view = $this->view($violations, 400);
             return $this->handleView($view);
         }
-        else
-        {
-            return new response(json_encode(['title_field' => 'title is required']));
-        }
 
-        $view = $this->view(new JsonResponse($data), 400);
-
+        $this->entityManager->persist($tasks);
+        $this->entityManager->flush();
+        
+        $response = [
+            'success' => 'task has been added successfully!',
+        ];
+        
+        // check if the tag or the key exists first before invalidating the cache
+        $this->cache->invalidateCache(['all-tasks', 'unnotified-tasks']);
+        
+        $view = $this->view($response, 200);
+        
         return $this->handleView($view);
-    
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TasksRepository")
@@ -19,6 +20,7 @@ class Tasks
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message = "Title is required", allowNull = false)
      */
     private $title;
 
@@ -29,8 +31,9 @@ class Tasks
 
     /**
      * @ORM\Column(type="integer", options={"default": 1})
+     * @Assert\NotBlank(message = "Priority is required", allowNull = false)
      */
-    private $priority;
+    private $priority = 1;
 
     /**
      * @ORM\Column(type="datetime")
@@ -39,12 +42,15 @@ class Tasks
 
     /**
      * @ORM\Column(type="datetime")
+     * @Assert\NotBlank(message = "Run at is required", allowNull = false)
+     * @Assert\DateTime
      */
     private $run_at;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Lists", inversedBy="tasks", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotBlank(message = "List is required", allowNull = false)
      */
     private $list;
 
@@ -92,7 +98,7 @@ class Tasks
         return $this->priority;
     }
 
-    public function setPriority(int $priority): self
+    public function setPriority(?int $priority): self
     {
         $this->priority = $priority;
 
