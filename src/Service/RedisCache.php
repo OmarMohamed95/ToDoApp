@@ -61,6 +61,11 @@ class RedisCache extends AbstractController implements CacheInterface
         return $cachedValue;
     }
 
+    public function getItem($key)
+    {
+        return $this->cache->getItem($key);
+    }
+
     public function deleteCache($key)
     {
         $this->cache->delete($key);
