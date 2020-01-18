@@ -17,7 +17,7 @@ class RegisterController extends AbstractFOSRestController
      * @RequestParam(name="email", nullable=false)
      * @RequestParam(name="password", nullable=false)
      * 
-     * @FileParam(name="image", image=true, default=NULL, nullable=true)
+     * @FileParam(name="image", default=NULL, nullable=true, strict=false)
      * 
      * @Route("/api/register", name="register", methods={"POST"})
      */
@@ -30,10 +30,14 @@ class RegisterController extends AbstractFOSRestController
 
         $userService->setCredentials($credentials);
         $userService->add();
-        $userService->generateAccessToken();
         $response = $userService->response();
 
-        $view = $this->view(['message' => $response['message']], $response['statusCode']);
+        if($response['statusCode'] === 200)
+        {
+            $userService->generateAccessToken();
+        }
+
+        $view = $this->view($response['message'], $response['statusCode']);
         return $this->handleView($view);
     }
 }
