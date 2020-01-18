@@ -19,4 +19,8 @@ framework:
         enabled: true
         circular_reference_handler: App\Service\Serializer\CircularReferenceHandler
 
+    validation: 
+        enabled: true
+        enable_annotations: true
+
     # templating: { engines: ['twig'] }
