@@ -3,6 +3,7 @@
     <h1 class="mt-5">Login</h1>
     <form action="http://127.0.0.1:8000/api/login_check" method="post" ref="loginForm" id="loginForm" v-on:submit.prevent="login()">
         <div class="mt-5">
+            <p class="validation-error" v-show="res.message">{{ res.message }}</p>
             <div class="form-group">
                 <input type="text" class="form-control" name='email' placeholder="email">
             </div>
@@ -59,14 +60,19 @@ export default {
                 data: JSON.stringify(Object.fromEntries(formData)),
             })
             .then(res => {
-                if(res)
+                if(res.status === 200)
                 {
                     this.$store.dispatch('pushNotification');
 
                     this.$router.push({name: 'task'});
                 }
             })
-            .catch(console.error)
+            .catch(error => {
+                if(error.response.status === 401)
+                {
+                    this.res = error.response.data.message;
+                }
+            })
         }
     },
     created() {
