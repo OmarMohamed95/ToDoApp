@@ -6,15 +6,19 @@
         <div class="mt-5">
             <div class="form-group">
                 <input type="text" class="form-control" name='username' placeholder="username">
+                <p class="validation-error" v-show="res.username">{{ res.username }}</p>
             </div>
             <div class="form-group">
                 <input type="text" class="form-control" name='email' placeholder="email">
+                <p class="validation-error" v-show="res.email">{{ res.email }}</p>
             </div>
             <div class="form-group">
                 <input type="password" class="form-control" name='password' placeholder="password">
+                <p class="validation-error" v-show="res.password">{{ res.password }}</p>
             </div>
             <div class="form-group">
                 <input type="file" name='image'>
+                <p class="validation-error" v-show="res.image">{{ res.image }}</p>
             </div>
             <div class="form-group">
                 <input type="submit" class="btn btn-outline-primary col-md-12" value="register">
@@ -60,7 +64,14 @@ export default {
                     this.$router.push({name: 'task'})
                 }
             })
-            .catch(console.error)
+            .catch(error => {
+                if(error.response.status === 400)
+                {
+                    this.res = error.response.data
+                }
+
+                console.error(error);
+            })
         },
         
     },

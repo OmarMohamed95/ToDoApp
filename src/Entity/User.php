@@ -4,11 +4,15 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\HttpFoundation\File\File;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @UniqueEntity(fields={"email"}, message="You're already registered!")
  */
 class User implements UserInterface
 {
@@ -21,6 +25,8 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank(message = "Email is required", allowNull = false)
+     * @Assert\Email(message = "This email is not valid.")
      */
     private $email;
 
@@ -31,17 +37,26 @@ class User implements UserInterface
 
     /**
      * @var string The hashed password
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string", nullable=true, options={"default": null})
+     * @Assert\NotBlank(message = "Password is required", allowNull = false)
+     * @Assert\NotCompromisedPassword
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message = "Username is required", allowNull = false)
      */
     private $username;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     *  @Assert\Image(
+     *     minWidth = 100,
+     *     maxWidth = 600,
+     *     minHeight = 100,
+     *     maxHeight = 600
+     * )
      */
     private $image;
 
@@ -155,7 +170,7 @@ class User implements UserInterface
         return $this->image;
     }
 
-    public function setImage(?string $image): self
+    public function setImage($image): self
     {
         $this->image = $image;
 

@@ -14,6 +14,8 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Http\Authentication\AuthenticationSuccessHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\ValidationService;
 
 class UserService extends AbstractController
 {
@@ -27,6 +29,8 @@ class UserService extends AbstractController
     private $user;
     private $passwordEncoder;
     private $JWTManager;
+    private $validator;
+    private $validationService;
     private $username;
     private $email;
     private $password = null;
@@ -34,7 +38,7 @@ class UserService extends AbstractController
     private $role = ['ROLE_USER'];
     private $source = 0;
 
-    public function __construct(FileUploader $fileUploader, EntityManagerInterface $entityManager, UserRepository $userRepo, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager, AuthenticationSuccessHandler $authenticationSuccessHandler, TokenStorageInterface $tokenStorage)
+    public function __construct(FileUploader $fileUploader, EntityManagerInterface $entityManager, UserRepository $userRepo, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager, AuthenticationSuccessHandler $authenticationSuccessHandler, TokenStorageInterface $tokenStorage, ValidatorInterface $validator, ValidationService $validationService)
     {
         $this->fileUploader = $fileUploader;
         $this->entityManager = $entityManager;
@@ -43,12 +47,14 @@ class UserService extends AbstractController
         $this->JWTManager = $JWTManager;
         $this->authenticationSuccessHandler = $authenticationSuccessHandler;
         $this->tokenStorage = $tokenStorage;
+        $this->validator = $validator;
+        $this->validationService = $validationService;
     }
 
     public function setCredentials($credentials)
     {
-        $this->username = $credentials['username'];
-        $this->email = $credentials['email'];
+        $this->username = trim($credentials['username']);
+        $this->email = trim($credentials['email']);
         $this->password = $credentials['password'] ?? $this->password;
         $this->image = $credentials['image'] ?? $this->image;
         $this->role = $credentials['role'] ?? $this->role;
@@ -57,43 +63,54 @@ class UserService extends AbstractController
 
     public function add()
     {
-        if($this->username & $this->email)
+        $this->user = new User();
+
+        $this->user->setUsername($this->username);
+        $this->user->setEmail($this->email);
+        $this->user->setRoles($this->role);
+        $this->user->setSource($this->source);
+
+        if($this->source === 0)
         {
-            $this->user = new User();
-
-            $this->user->setUsername($this->username);
-            $this->user->setEmail($this->email);
-            $this->user->setRoles($this->role);
-            $this->user->setSource($this->source);
-
-            if($this->source === 0)
+            if(!empty($this->password))
             {
                 $encodedPassword = $this->passwordEncoder->encodePassword($this->user, $this->password);
                 $this->user->setPassword($encodedPassword);
             }
+            else
+            {
+                $this->user->setPassword($this->password);
+            }
 
             if($this->image)
             {
-                $this->fileUploader->setDirectoryName('user');
-                $fileName = $this->fileUploader->upload($this->image)->getFileName();
-
-                $this->user->setImage($fileName);
+                $this->user->setImage($this->image);
             }
 
-            $this->entityManager->persist($this->user);
-            $this->entityManager->flush();
+            $errors = $this->validator->validate($this->user);
 
-            $this->statusCode = 200;
-            $this->message = 'Congratulations, Your account has been created successfully!';
-            
-            return $this->user;
-        }
-        else
-        {
-            $this->statusCode = 400;
-            $this->message = 'All fields are requird!';
-        }
+            if(count($errors) > 0)
+            {
+                $violations = $this->validationService->identifyErrors($errors);
+    
+                $this->statusCode = 400;
+                $this->message = $violations;
 
+                return;
+            }
+            else
+            {
+                $this->fileUploader->setDirectoryName('user');
+                $this->fileUploader->upload($this->image);
+                $this->user->setImage($this->fileUploader->getFileName());
+            }
+        }
+        
+        $this->entityManager->persist($this->user);
+        $this->entityManager->flush();
+
+        $this->statusCode = 200;
+        $this->message = 'Congratulations, Your account has been created successfully!';
     }
 
     public function checkIfUserExists($email)
