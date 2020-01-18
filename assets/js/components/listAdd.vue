@@ -5,8 +5,8 @@
     <form action="http://127.0.0.1:8000/api/list" method="post" enctype="multipart/form-data" ref="listForm" id="listForm" v-on:submit.prevent="getData()">
         <div class="form-row mt-5">
             <div class="col-4">
-                <input type="text" name="name" placeholder="name" class="form-control" id="listName" ref="listName">
-                <p class="validation-error" v-show="res.name_field">{{ res.name_field }}</p>
+                <input type="text" name="title" placeholder="Title" class="form-control" id="listTitle" ref="listTitle">
+                <p class="validation-error" v-show="res.title">{{ res.title }}</p>
             </div>
             <div class="col-2">
                 <input class="btn btn-outline-success" type="submit" value="Add">
@@ -49,8 +49,19 @@ export default {
                 method: 'POST', 
                 data: formData,
             })
-            .then(res => this.res = res.data)
-            .catch(console.error)
+            .then(res => {
+                if(res.status === 200)
+                {
+                    this.res = res.data
+                }
+            })
+            .catch(error => {
+                if(error.response.status === 400)
+                {
+                    this.res = error.response.data
+                }
+                console.log(error.response);
+            })
 
         }
     }

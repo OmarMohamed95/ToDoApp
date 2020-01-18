@@ -7,6 +7,7 @@ use App\Service\Serializer\SerializerService;
 use App\Util\CacheInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\ListsRepository;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
@@ -14,9 +15,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\RequestParam;
 use FOS\RestBundle\Controller\Annotations\FileParam;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\UserService;
+use App\Service\ValidationService;
 
 class ListController extends AbstractFOSRestController
 {
@@ -60,42 +61,45 @@ class ListController extends AbstractFOSRestController
 
     /**
      * @RequestParam(
-     *   name="name",
+     *   name="title",
      *   nullable=false
      * )
      * 
      * @Route("/api/list", name="list_add", methods={"POST"})
      */
-    public function add(ParamFetcher $paramFetcher)
+    public function add(ParamFetcher $paramFetcher, ValidatorInterface $validator, ValidationService $validationService)
     {
         $list = new Lists();
 
         //make service to handle this, just send the name of the fields and it will return array of values.
-        $name = $paramFetcher->get('name');
+        $title = $paramFetcher->get('title');
+        
+        $list->setTitle(trim($title));
+        $list->setUser($this->user->getCurrentUser());
+        
+        $errors = $validator->validate($list);
 
-        if($name){
+        if(count($errors) > 0){
 
-            $list->setTitle($name);
+            $violations = $validationService->identifyErrors($errors);
 
-            $this->entityManager->persist($list);
-            $this->entityManager->flush();
-
-            $response = [
-                'success' => 'List has been added successfully!',
-                'list' => $list
-            ];
-
-            $this->cache->invalidateCache(['all-lists']);
-
-            $view = $this->view($response, 200);
+            $view = $this->view($violations, 400);
 
             return $this->handleView($view);
         }
 
-        // $view = $this->view(new JsonResponse($data), 400);
+        $this->entityManager->persist($list);
+        $this->entityManager->flush();
 
-        // return $this->handleView($view);
-        
-        return new response(json_encode(['name_field' => 'name is required']));
+        $response = [
+            'success' => 'List has been added successfully!',
+            'list' => $list
+        ];
+
+        $this->cache->invalidateCache(['all-lists']);
+
+        $view = $this->view($response, 200);
+
+        return $this->handleView($view);
     }
 }
