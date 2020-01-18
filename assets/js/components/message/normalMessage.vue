@@ -26,7 +26,7 @@ export default {
     position: fixed;
     bottom: 15px;
     right: 45px;
-    background: #20212B;
+    background: #323232;
     color: white;
     padding: 15px 20px 3px 20px;
     border-radius: 5px;
