@@ -100,9 +100,12 @@ class UserService extends AbstractController
             }
             else
             {
-                $this->fileUploader->setDirectoryName('user');
-                $this->fileUploader->upload($this->image);
-                $this->user->setImage($this->fileUploader->getFileName());
+                if($this->image)
+                {
+                    $this->fileUploader->setDirectoryName('user');
+                    $this->fileUploader->upload($this->image);
+                    $this->user->setImage($this->fileUploader->getFileName());
+                }
             }
         }
         
