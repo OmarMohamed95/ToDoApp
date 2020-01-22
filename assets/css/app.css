@@ -162,8 +162,7 @@ body {
 
 .task-con .priority{
 	float: right;
-    padding: 3px 6px 3px 6px;
-    margin-bottom: 0px !important;
+    color: red;
 }
 
 .task-con .note{
@@ -171,19 +170,15 @@ body {
 }
 
 .task-con .list-title{
-	border: 1px solid #ddd;
-    width: auto;
-    background-color: black;
-    color: white;
+	color: black;
     font-weight: bold;
-    float: right;
-    padding: 10px;
-    border-radius: 10px;
+    display: inline;
 }
 
 .task-con .run-at{
 	font-size: 13px;
     font-weight: bold;
+    display: inline;
 }
 
 .task-checkbox{
@@ -204,6 +199,27 @@ body {
 
 .task-title{
     margin-bottom: 5px;
+}
+
+.task-add-con input[type='text'],
+.task-add-con input[type='submit'],
+.task-add-con  select{
+    border-radius: 20px !important;
+}
+
+.task-add-con input[type='submit']{
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+
+.task-add-priority-con input[type='radio']{
+    width: 25px;
+    display: inline;
+    margin-right: 5px;
+}
+
+.task-add-priority-con label{
+    display: block;
 }
 
 .imageStyle{
