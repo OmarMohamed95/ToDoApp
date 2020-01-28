@@ -78,7 +78,8 @@ class GoogleLoginController extends AbstractFOSRestController
 
             $accessToken = $userService->generateAccessToken();
 
-            $view = $this->routeRedirectView('home_index', [], 301);
+            // $view = $this->routeRedirectView('home_index', [], 301);
+            $view = $this->redirectView('http://127.0.0.1:8000/task', 301);
             return $this->handleView($view);
           } 
     }
