@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\RequestParam;
+use FOS\RestBundle\Controller\Annotations\QueryParam;
 use FOS\RestBundle\Controller\Annotations\FileParam;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\Serializer\SerializerService;
@@ -89,7 +90,7 @@ class TaskController extends AbstractFOSRestController
     /**
      * @Route("/api/task/notified/{id}", name="update_notify_status", methods={"PATCH"})
      */
-    public function updateNotifyStatus($id)
+    public function updateNotifyStatus(int $id)
     {
         $obj = $this->tasksRepo->find($id);
         $obj->setIsNotified(true);
@@ -98,6 +99,84 @@ class TaskController extends AbstractFOSRestController
         $this->cache->invalidateCache(['unnotified-tasks']);
 
         $view = $this->view([], 204);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Route("/api/task/{id}", name="task_by_id", methods={"GET"})
+     */
+    public function getTaskById(int $id)
+    {
+
+        $results = $this->tasksRepo->findOneBy(['id' => $id]);
+
+        
+        if($results)
+        {
+            $statusCode = 200;
+        }
+        else
+        {   
+            $statusCode = 204;
+        }
+
+        $view = $this->view($results, $statusCode);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Route("/api/task/{id}", name="edit_task", methods={"PUT"})
+     * 
+     * @RequestParam(name="title", nullable=true)
+     * @RequestParam(name="note", nullable=true)
+     * @RequestParam(name="list", nullable=true)
+     * @RequestParam(name="priority", nullable=true)
+     * @RequestParam(name="run_at", nullable=true)
+     */
+    public function edit(int $id, ParamFetcher $paramFetcher, ValidatorInterface $validator, ValidationService $validationService)
+    {
+        //make service to handle this, just send the name of the fields and it will return array of values.
+        $title = $paramFetcher->get('title');
+        $note = $paramFetcher->get('note');
+        $list = $paramFetcher->get('list');
+        $priority = $paramFetcher->get('priority');
+        $runAt = $paramFetcher->get('run_at');
+        
+        $task = $this->tasksRepo->find($id);
+        $lists = $this->getDoctrine()->getRepository(Lists::class)->find($list);
+
+        if($runAt > date("Y-m-d H:i:s"))
+        {
+            $task->setIsNotified(false);
+            $task->setRunAt($runAt);
+        }
+        $task->setTitle(trim($title));
+        $task->setNote(trim($note));
+        $task->setList($lists);
+        $task->setPriority($priority);
+        $task->setIsDone(false);
+
+        $errors = $validator->validate($task);
+
+        if(count($errors) > 0)
+        {
+            $violations = $validationService->identifyErrors($errors);
+
+            $view = $this->view($violations, 400);
+            return $this->handleView($view);
+        }
+
+        $this->entityManager->flush();
+        
+        $response = [
+            'success' => 'task has been updated successfully!',
+        ];
+        
+        // check if the tag or the key exists first before invalidating the cache
+        $this->cache->invalidateCache(['all-tasks', 'unnotified-tasks']);
+        
+        $view = $this->view($response, 200);
+        
         return $this->handleView($view);
     }
 

@@ -11,9 +11,7 @@
         </select>
         <router-link to="/task/add" class="btn btn-outline-primary col-md-2 offset-md-5" style="border-radius: 20px">Add +</router-link>
         <hr>
-        <div v-if="loading">
-            <p class="text-center"><font-awesome-icon class="fa-pulse fa-3x" :icon="['fas', 'spinner']" /></p>
-        </div>
+        <loading v-if="loading"></loading>
         <div v-else-if="tasks.length" class="">
             <div :key="k" v-for="(task,k) in sortedTasks">
                 <div v-if="$route.params.sort === 'priority'">
@@ -42,10 +40,10 @@
                 </div>
                 <div class="task-con mb-3">
                     <div class="task-checkbox">
-                        <input type="checkbox" name="is_done" :value="task.id">
+                        <font-awesome-icon class="icon-blue-pointer fa-lg" :icon="['fas', 'check-circle']" />
                     </div>
                     <div class="task-data-con">
-                        <a href="" class="float-right"><font-awesome-icon class="fa-lg" :icon="['fas', 'pen']" /></a>
+                        <font-awesome-icon v-on:click="showEdit(task.id)" class="icon-blue-pointer float-right fa-lg" :icon="['fas', 'pen']" />
                         <p class="font-weight-bold task-title">{{ task.title }}</p>
                         <p class="note">{{ task.note }}</p>
                         <hr>
@@ -65,34 +63,33 @@
             <p class="alert alert-danger text-center">No tasks found!</p>
         </div>
     </div>  
+    <div v-if="isEditing" @click="close($event)" id="transparent-background" class="transparent-background">
+        <task-edit></task-edit>
+    </div>
 </div>
 </template>
 
 <script type="text/javascript">
 
 import axios from 'axios'
+import loading from './loading'
+import taskEdit from './taskEdit'
 
 export default {
     name: 'task',
     props:['uploads_base_url'],
     data: function(){
         return{
-            tasks: {},
-            loading: true,
             sortKey: "",
         }
     },
+    components: {
+        loading: loading,
+        'task-edit': taskEdit,
+    },
     methods: {
-        getTasksByDateDesc: function(){
-            axios.get('http://127.0.0.1:8000/api/task')
-            .then((response) => {
-                this.loading = false;
-                //check if this working fine when the status is 204
-                this.tasks = (response.status === 204) ? response.text() : response.data;
-            })
-            .catch((error) => {
-                throw error;
-            });
+        getTasksByDateDesc: function() {
+            this.$store.dispatch('getTasksByDateDesc')
         },
         sortLink: function (event) {
             this.setSelectedInSession();
@@ -108,6 +105,18 @@ export default {
         disableOption: function () {
             let value = sessionStorage.getItem('tasks-sorting-id');
             document.querySelector(`[value='${value}']`).disabled = true;
+        },
+        showEdit: function (id) {
+            this.$store.dispatch("setLoading", true)
+            this.$store.dispatch("updateIsEditing", true)
+            this.$store.dispatch("setTaskId", id)
+            this.$store.dispatch("getTaskById")
+        },
+        close: function (event) {
+            if(event.target.id === 'transparent-background')
+            {
+                this.$store.dispatch("updateIsEditing", false)
+            }
         },
 
     //     getTasksByPriorityDesc: function(){
@@ -125,6 +134,9 @@ export default {
     //     }
     },
     computed: {
+        tasks: function () {
+            return this.$store.getters.getAllTasks;
+        },
         sortedTasks: function () {
             if(this.$route.params.sort === 'priority' && this.$route.params.order === 'desc')
             {
@@ -163,6 +175,12 @@ export default {
                 return new Date(a.runAt) - new Date(b.runAt)
             });
         },
+        isEditing(){
+            return this.$store.getters.getIsEditing
+        },
+        loading(){
+            return this.$store.getters.getTasksLoading
+        },
     },
     created() {
         this.getTasksByDateDesc();
@@ -177,4 +195,24 @@ export default {
 
 <style scoped>
 
-</style>>
+.icon-blue-pointer{
+    color: #007bff;
+    cursor: pointer;
+}
+
+.icon-blue-pointer:hover{
+    color: #0056b3;
+    cursor: pointer;
+}
+
+.transparent-background{
+    background-color: rgba(0,0,0,0.5);
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    z-index: 100;
+}
+
+</style>
