@@ -23,7 +23,7 @@ import axios from 'axios'
 // font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'
 // font awesome icon names
-import { faList, faTasks, faHome, faSpinner, faBell, faClock, faPen } from '@fortawesome/free-solid-svg-icons'
+import { faList, faTasks, faHome, faSpinner, faBell, faClock, faPen, faCheckCircle, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 
@@ -46,7 +46,7 @@ Vue.use(VueRouter)
 Vue.use(Datetime)
 
 //font awesome config
-library.add(faList, faTasks, faHome, faSpinner, faBell, faClock, faPen)
+library.add(faList, faTasks, faHome, faSpinner, faBell, faClock, faPen, faCheckCircle, faTimes)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.config.productionTip = false
 
