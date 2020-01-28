@@ -4,9 +4,7 @@
     <div>
         <router-link to="/list/add" class="btn btn-outline-primary mb-3 offset-md-10">Add +</router-link>
         <hr>
-        <div v-if="loading">
-            <p class="text-center"><font-awesome-icon class="fa-pulse fa-3x" :icon="['fas', 'spinner']" /></p>
-        </div>
+        <loading v-if="loading"></loading>
         <div v-else-if="res.length" class="row offset-md-2">
             <div :key="k" v-for="(i,k) in res" class="col-md-3 con mb-3 ml-2">
                 <p class="font-weight-bold text-center">{{ i.title }}</p>
@@ -22,6 +20,7 @@
 <script type="text/javascript">
 
 import axios from 'axios'
+import loading from './loading'
 
 export default {
     name: 'list',
@@ -31,6 +30,9 @@ export default {
             res: {},
             loading: true,
         }
+    },
+    components: {
+        loading: loading
     },
     methods: {
         getData: function(){
