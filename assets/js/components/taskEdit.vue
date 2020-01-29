@@ -100,9 +100,12 @@ export default {
     methods: {
         getData () {
             this.$store.dispatch("setTaskEditLoading", true)
-            this.$store.dispatch('getTaskById');
-            this.$store.dispatch('getAllLists');
-            this.$store.dispatch('setTaskEditLoading', false);
+            let task = this.$store.dispatch('getTaskById');
+            let lists = this.$store.dispatch('getAllLists');
+            Promise.all([task, lists])
+            .then(() => {
+                this.$store.dispatch('setTaskEditLoading', false);
+            })
         },
         editTask: function(){
             const form = document.getElementById('taskForm');
