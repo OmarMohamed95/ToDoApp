@@ -84,21 +84,19 @@ export default {
     },
     computed: {
         loading(){
-            return this.$store.getters.getLoading
-        },
-        res(){
-            return this.$store.getters.getRes
+            return this.$store.getters.getTaskAddLoading
         },
         message(){
-            return this.$store.getters.message
+            return this.$store.getters.getTaskAddMessage
         },
         lists(){
             return this.$store.getters.getLists
         },
     },
     methods: {
-        getAllLists: function(){
-            this.$store.dispatch('getAllLists');
+        async getAllLists(){
+            await this.$store.dispatch('getAllLists');
+            this.$store.dispatch('setTaskAddLoading', false);
         },
         addTask: function(){
             const form = document.getElementById('taskForm');
@@ -110,8 +108,8 @@ export default {
         },
     },
     created() {
+        this.$store.dispatch('clearTaskAddMessage');
         this.getAllLists();
-        this.$store.dispatch('clearMessage');
     },
 }
 </script>

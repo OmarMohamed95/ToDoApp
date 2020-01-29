@@ -9,21 +9,21 @@
             <div class="form-group row mt-2">
                 <label for="title" class="label col-md-2">title</label>
                 <div class="col-md-10">
-                    <input type="text" name="title" class="form-control" id="title" ref="task_title" placeholder="title" :value="res.title">
+                    <input type="text" name="title" class="form-control" id="title" ref="task_title" placeholder="title" :value="task.title">
                     <p class="validation-error" v-show="message.title">{{ message.title }}</p>
                 </div>
             </div>
             <div class="form-group row mt-2">
                 <label for="note" class="label col-md-2">note</label>
                 <div class="col-md-10">
-                    <input type="text" name="note" class="form-control" id="note" ref="task_note"  placeholder="note" :value="res.note">
+                    <input type="text" name="note" class="form-control" id="note" ref="task_note"  placeholder="note" :value="task.note">
                 </div>
             </div>
             <div class="form-group row mt-2">
                 <label for="list" class="label col-md-2">list</label>
                 <div class="col-md-10">
                     <select name="list" class="form-control" id="note" ref="task_note">
-                        <option :selected="res.list.id === i.id ? 'selected' : ''" :key="k" v-for="(i, k) in lists" :value="i.id">{{ i.title }}</option>
+                        <option :selected="task.list.id === i.id ? 'selected' : ''" :key="k" v-for="(i, k) in lists" :value="i.id">{{ i.title }}</option>
                     </select>
                     <p class="validation-error" v-show="message.list">{{ message.list }}</p>
                 </div>
@@ -32,19 +32,19 @@
                 <label for="priority" class="label col-md-2">priority</label>
                 <div class="col-md-10">
                     <div class="form-check form-check-inline">
-                        <input type="radio" value="1" name="priority" class="form-control" id="priority" ref="task_priority" :checked="res.priority === 1 ? 'checked' : ''">
+                        <input type="radio" value="1" name="priority" class="form-control" id="priority" ref="task_priority" :checked="task.priority === 1 ? 'checked' : ''">
                         <label class="form-check-label" for="exampleRadios1">low</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" value="2" name="priority" class="form-control" id="priority" ref="task_priority" :checked="res.priority === 2 ? 'checked' : ''">
+                        <input type="radio" value="2" name="priority" class="form-control" id="priority" ref="task_priority" :checked="task.priority === 2 ? 'checked' : ''">
                         <label class="form-check-label" for="exampleRadios1">medium</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" value="3" name="priority" class="form-control" id="priority" ref="task_priority" :checked="res.priority === 3 ? 'checked' : ''">
+                        <input type="radio" value="3" name="priority" class="form-control" id="priority" ref="task_priority" :checked="task.priority === 3 ? 'checked' : ''">
                         <label class="form-check-label" for="exampleRadios1">high</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" value="4" name="priority" class="form-control" id="priority" ref="task_priority" :checked="res.priority === 4 ? 'checked' : ''">
+                        <input type="radio" value="4" name="priority" class="form-control" id="priority" ref="task_priority" :checked="task.priority === 4 ? 'checked' : ''">
                         <label class="form-check-label" for="exampleRadios1">very high</label>
                     </div>
                     <p class="validation-error" v-show="message.priority">{{ message.priority }}</p>
@@ -82,13 +82,13 @@ export default {
     },
     computed: {
         loading(){
-            return this.$store.getters.getLoading
+            return this.$store.getters.getTaskEditLoading
         },
-        res(){
-            return this.$store.getters.getRes
+        task(){
+            return this.$store.getters.getEditTask
         },
         message(){
-            return this.$store.getters.message
+            return this.$store.getters.getTaskEditMessage
         },
         lists(){
             return this.$store.getters.getLists
@@ -98,8 +98,11 @@ export default {
         },
     },
     methods: {
-        getAllLists: function(){
+        getData () {
+            this.$store.dispatch("setTaskEditLoading", true)
+            this.$store.dispatch('getTaskById');
             this.$store.dispatch('getAllLists');
+            this.$store.dispatch('setTaskEditLoading', false);
         },
         editTask: function(){
             const form = document.getElementById('taskForm');
@@ -118,8 +121,8 @@ export default {
         loading: loading,
     },
     created() {
-        this.getAllLists();
-        this.$store.dispatch('clearMessage');
+        this.$store.dispatch('clearTaskEditMessage');
+        this.getData();
     },
 }
 </script>

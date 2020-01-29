@@ -107,10 +107,8 @@ export default {
             document.querySelector(`[value='${value}']`).disabled = true;
         },
         showEdit: function (id) {
-            this.$store.dispatch("setLoading", true)
-            this.$store.dispatch("updateIsEditing", true)
             this.$store.dispatch("setTaskId", id)
-            this.$store.dispatch("getTaskById")
+            this.$store.dispatch("updateIsEditing", true)
         },
         close: function (event) {
             if(event.target.id === 'transparent-background')

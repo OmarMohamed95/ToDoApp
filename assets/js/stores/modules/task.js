@@ -2,41 +2,53 @@ import axios from "axios";
 
 export default {
     state: {
-        loading: true,
-        res: {},
-        message: {},
-        lists: {},
+        taskAdd: {
+            loading: true,
+            message: {},
+        },
+        taskEdit: {
+            task: {},
+            loading: true,
+            message: {},
+        },
         tasks: {
             tasks: {},
             loading: true,
         },
-        isEditing: false,
         currentTask: {
             id: Number,
             isUpdated: false
-        }    
+        },    
+        lists: {},
+        isEditing: false,
     },
     getters: {
         getTasksLoading: state => {
             return state.tasks.loading
         },
-        getLoading: state => {
-            return state.loading
+        getTaskAddLoading: state => {
+            return state.taskAdd.loading
         },
-        getRes: state => {
-            return state.res
+        getTaskEditLoading: state => {
+            return state.taskEdit.loading
         },
-        message: state => {
-            return state.message
+        getTaskAddMessage: state => {
+            return state.taskAdd.message
         },
-        getLists: state => {
-            return state.lists
+        getTaskEditMessage: state => {
+            return state.taskEdit.message
         },
         getIsEditing: state => {
             return state.isEditing
         },
         getTaskId: state => {
             return state.currentTask.id
+        },
+        getLists: state => {
+            return state.lists
+        },
+        getEditTask: state => {
+            return state.taskEdit.task
         },
         getAllTasks: state => {
             return state.tasks
@@ -46,17 +58,23 @@ export default {
         SET_TASKS_LOADING: (state, value) => {
             state.tasks.loading = value
         },
-        SET_LOADING: (state, value) => {
-            state.loading = value
+        SET_TASK_ADD_LOADING: (state, value) => {
+            state.taskAdd.loading = value
         },
-        SET_RES: (state, res) => {
-            state.res = res
+        SET_TASK_EDIT_LOADING: (state, value) => {
+            state.taskEdit.loading = value
+        },
+        SET_EDIT_TASK: (state, res) => {
+            state.taskEdit.task = res
         },
         SET_TASKS: (state, value) => {
             state.tasks = value
         },
-        SET_MESSAGE: (state, message) => {
-            state.message = message
+        SET_TASK_ADD_MESSAGE: (state, message) => {
+            state.taskAdd.message = message
+        },
+        SET_TASK_EDIT_MESSAGE: (state, message) => {
+            state.taskEdit.message = message
         },
         SET_LISTS: (state, lists) => {
             state.lists = lists
@@ -70,8 +88,11 @@ export default {
         SET_IS_UPDATED: (state, value) => {
             state.currentTask.isUpdated = value
         },
-        CLEAR_MESSAGE: state => {
-            state.message = {}
+        CLEAR_TASK_EDIT_MESSAGE: state => {
+            state.taskEdit.message = {}
+        },
+        CLEAR_TASK_ADD_MESSAGE: state => {
+            state.taskAdd.message = {}
         },
     },
     actions: {
@@ -97,7 +118,7 @@ export default {
                 if(res.status === 200)
                 {
                     let data = res.data;
-                    context.commit('SET_MESSAGE', data)
+                    context.commit('SET_TASK_ADD_MESSAGE', data)
                     context.dispatch("pushNotification");
                 }
             })
@@ -105,7 +126,7 @@ export default {
                 if(error.response.status === 400)
                 {
                     let data = error.response.data;
-                    context.commit('SET_MESSAGE', data)
+                    context.commit('SET_TASK_ADD_MESSAGE', data)
                 }
                 console.log(error.response);
             })
@@ -121,7 +142,7 @@ export default {
                 if(res.status === 200)
                 {
                     let data = res.data;
-                    context.commit('SET_MESSAGE', data)
+                    context.commit('SET_TASK_EDIT_MESSAGE', data)
                     context.commit('UPDATE_IS_EDITING', false)
                     context.commit('SET_IS_UPDATED', true)
                     context.dispatch("getTasksByDateDesc")
@@ -132,19 +153,17 @@ export default {
                 if(error.response.status === 400)
                 {
                     let data = error.response.data;
-                    context.commit('SET_MESSAGE', data)
+                    context.commit('SET_TASK_EDIT_MESSAGE', data)
                 }
                 console.log(error.response);
             })
 
         },
         getAllLists: context => {
-            
-            axios.get('http://127.0.0.1:8000/api/list')
+            return axios.get('http://127.0.0.1:8000/api/list')
             .then(res => {
                 let listsData = res.data;
                 context.commit('SET_LISTS', listsData);
-                context.commit('SET_LOADING', false);
             })
             .catch(console.error)
         },
@@ -154,19 +173,21 @@ export default {
         setTaskId: (context, id)  => {
             context.commit("SET_TASK_ID", id)   
         },
-        setLoading: (context, value)  => {
-            context.commit("SET_LOADING", value)   
+        setTaskEditLoading: (context, value)  => {
+            context.commit("SET_TASK_EDIT_LOADING", value)
+        },
+        setTaskAddLoading: (context, value)  => {
+            context.commit("SET_TASK_ADD_LOADING", value)
         },
         getTaskById: (context)  => {
-            if(context.state.currentTask.id !== context.state.res.id || context.state.currentTask.isUpdated === true)
+            if(context.state.currentTask.id !== context.state.taskEdit.task.id || context.state.currentTask.isUpdated === true)
             {
-                axios({
+                return axios({
                     url: `http://127.0.0.1:8000/api/task/${context.state.currentTask.id}`,
                     method: 'GET',
                 })
                 .then(res => {
-                    context.commit('SET_RES', res.data);
-                    context.commit('SET_LOADING', false);
+                    context.commit('SET_EDIT_TASK', res.data);
                     context.commit('SET_IS_UPDATED', false);
                 })
                 .catch(error => {
@@ -174,8 +195,11 @@ export default {
                 })         
             }
         },
-        clearMessage: (context)  => {
-            context.commit('CLEAR_MESSAGE')
+        clearTaskAddMessage: context => {
+            context.commit('CLEAR_TASK_ADD_MESSAGE')
+        },
+        clearTaskEditMessage: context => {
+            context.commit('CLEAR_TASK_EDIT_MESSAGE')
         },
     },
 }
