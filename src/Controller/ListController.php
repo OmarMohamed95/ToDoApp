@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\BaseController;
 use App\Entity\Lists;
 use App\Service\Serializer\SerializerService;
 use App\Util\CacheInterface;
@@ -10,7 +11,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\ListsRepository;
-use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\RequestParam;
@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\UserService;
 use App\Service\ValidationService;
 
-class ListController extends AbstractFOSRestController
+class ListController extends BaseController
 {
     private $listRepo;
     private $entityManager;
@@ -47,16 +47,11 @@ class ListController extends AbstractFOSRestController
 
         });
 
-        if($results)
-        {
-            $view = $this->view($results, Response::HTTP_OK);
-        }
-        else
-        {
-            $view = $this->view($results, 204);
+        if(!$results){
+            return $this->baseView(null, 204);
         }
 
-        return $this->handleView($view);
+        return $this->baseView($results);
     }
 
     /**
@@ -83,9 +78,7 @@ class ListController extends AbstractFOSRestController
 
             $violations = $validationService->identifyErrors($errors);
 
-            $view = $this->view($violations, 400);
-
-            return $this->handleView($view);
+            return $this->baseView($violations, 400);
         }
 
         $this->entityManager->persist($list);
@@ -98,8 +91,6 @@ class ListController extends AbstractFOSRestController
 
         $this->cache->invalidateCache(['all-lists']);
 
-        $view = $this->view($response, 200);
-
-        return $this->handleView($view);
+        return $this->baseView($response);
     }
 }

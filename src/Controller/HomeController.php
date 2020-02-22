@@ -2,12 +2,11 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use FOS\RestBundle\Controller\AbstractFOSRestController;
+use App\Controller\BaseController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\UserService;
 
-class HomeController extends AbstractFOSRestController
+class HomeController extends BaseController
 {
     /**
      * @Route("/{vueRouting}", name="home_index", requirements={"vueRouting"="^(?!api|_(profiler|wdt)).*"})

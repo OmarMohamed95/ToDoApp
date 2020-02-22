@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use FOS\RestBundle\Controller\AbstractFOSRestController;
+use App\Controller\BaseController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,7 +13,7 @@ use App\Util\CacheInterface;
 /**
  * @Route("/api/")
  */
-class AuthController extends AbstractFOSRestController
+class AuthController extends BaseController
 {
     private $request;
     private $response;
@@ -34,13 +34,11 @@ class AuthController extends AbstractFOSRestController
         if($refreshToken){
             $response = ['isAuthenticated' => true];
         }
-        else
-        {
+        else{
             $response = ['isAuthenticated' => false];
         }
         
-        $view = $this->view($response, 200);
-        return $this->handleView($view);
+        return $this->baseView($response);
     }
 
     /**
@@ -50,17 +48,11 @@ class AuthController extends AbstractFOSRestController
     {
         $currentUser = $user->getCurrentUser(['id' => 'getId', 'username' => 'getUsername']);
 
-        if($currentUser != null)
-        {
-            $status = 200;
-        }
-        else
-        {
-            $status = 204;
+        if($currentUser === null){
+            return $this->baseView(null, 204);
         }
 
-        $view = $this->view($currentUser, $status);
-        return $this->handleView($view);
+        return $this->baseView($currentUser);
     }
 
     /**
@@ -76,7 +68,6 @@ class AuthController extends AbstractFOSRestController
 
         // $refreshToken = $this->request->cookies->get('REFRESH_TOKEN');
         
-        $view = $this->view(['message' => 'logged out successfully'], 200);
-        return $this->handleView($view);
+        return $this->baseView(['message' => 'logged out successfully']);
     }
 }

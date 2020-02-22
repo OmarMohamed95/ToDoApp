@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use FOS\RestBundle\Controller\AbstractFOSRestController;
+use App\Controller\BaseController;
 use Symfony\Component\Routing\Annotation\Route;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\RequestParam;
@@ -10,7 +10,7 @@ use FOS\RestBundle\Controller\Annotations\FileParam;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Service\UserService;
 
-class RegisterController extends AbstractFOSRestController
+class RegisterController extends BaseController
 {
     /**
      * @RequestParam(name="username", nullable=false)
@@ -32,12 +32,10 @@ class RegisterController extends AbstractFOSRestController
         $userService->add();
         $response = $userService->response();
 
-        if($response['statusCode'] === 200)
-        {
+        if($response['statusCode'] === 200){
             $userService->generateAccessToken();
         }
 
-        $view = $this->view($response['message'], $response['statusCode']);
-        return $this->handleView($view);
+        return $this->baseView($response['message'], $response['statusCode']);
     }
 }
