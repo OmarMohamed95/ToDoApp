@@ -6,14 +6,14 @@
             <option value hidden>SORT BY</option>
             <option value="run_at/desc">RUN AT: NEW TO OLD</option>
             <option value="run_at/asc">RUN AT: OLD TO NEW</option>
-            <option value="priority/asc">PRIORITY: HIGH TO LOW</option>
-            <option value="priority/desc">PRIORITY: LOW TO HIGH</option>
+            <option value="priority/desc">PRIORITY: HIGH TO LOW</option>
+            <option value="priority/asc">PRIORITY: LOW TO HIGH</option>
         </select>
         <router-link to="/task/add" class="btn btn-outline-primary col-md-2 offset-md-5" style="border-radius: 20px">Add +</router-link>
         <hr>
         <loading v-if="loading"></loading>
-        <div v-else-if="tasks.length" class="">
-            <div :key="k" v-for="(task,k) in sortedTasks">
+        <div v-show="tasks.length" class="" id="all-tasks">
+            <div :key="k" v-for="(task,k) in tasks">
                 <div v-if="$route.params.sort === 'priority'">
                     <div v-if="k === 0">
                         <p v-if="task.priority === 4" class="tasks-group-title mt-5">VERY HIGH</p>
@@ -58,8 +58,11 @@
                     </div>
                 </div>                    
             </div>
+            <div>
+                <button @click="upgradePage" class="btn btn-outline-primary mt-3 mb-5 col-md-12">Show More</button>
+            </div>
         </div>
-        <div v-else>
+        <div v-if="!tasks.length">
             <p class="alert alert-danger text-center">No tasks found!</p>
         </div>
     </div>  
@@ -81,6 +84,10 @@ export default {
     data: function(){
         return{
             sortKey: "",
+            tasksSortBy: ['run_at', 'priority'],
+            tasksOrder: ['desc', 'asc'],
+            defaultSort: 'run_at',
+            defaultOrder: 'desc',
         }
     },
     components: {
@@ -88,8 +95,21 @@ export default {
         'task-edit': taskEdit,
     },
     methods: {
-        getTasksByDateDesc: function() {
-            this.$store.dispatch('getTasksByDateDesc')
+        getTasks: function() {
+            this.$store.dispatch('setTasksLoading', true)
+
+            let sort = this.$route.params.sort;
+            let order = this.$route.params.order;
+
+            if(this.tasksSortBy.includes(sort) && this.tasksOrder.includes(order))
+            {
+                this.$store.dispatch('getTasks', {sort, order})
+            }
+            else
+            {
+                sessionStorage.removeItem('tasks-sorting-id')
+                this.$store.dispatch('getTasks', {sort: this.defaultSort, order: this.defaultOrder})
+            }
         },
         sortLink: function (event) {
             this.setSelectedInSession();
@@ -116,6 +136,18 @@ export default {
                 this.$store.dispatch("updateIsEditing", false)
             }
         },
+        upgradePage: function () {
+            let sort = this.$route.params.sort;
+            let order = this.$route.params.order;
+
+            this.$store.dispatch("upgradePage")
+            this.$store.dispatch('getTasks', {sort: sort, order: order})
+        },
+        render: function(){
+            let ele = document.getElementById('all-tasks');
+            let textnode = document.createTextNode("Water");
+            ele.appendChild(textnode);
+        },
 
     //     getTasksByPriorityDesc: function(){
     //         axios.get('http://127.0.0.1:8000/api/task/priority', {
@@ -135,44 +167,6 @@ export default {
         tasks: function () {
             return this.$store.getters.getAllTasks;
         },
-        sortedTasks: function () {
-            if(this.$route.params.sort === 'priority' && this.$route.params.order === 'desc')
-            {
-                return this.tasksPriorityDesc;
-            }
-            else if(this.$route.params.sort === 'priority' && this.$route.params.order === 'asc')
-            {
-                return this.tasksPriorityAsc;
-            }
-            else if(this.$route.params.sort === 'run_at' && this.$route.params.order === 'asc')
-            {
-                return this.tasksRunAtAsc;
-            }
-            else if(this.$route.params.sort === 'run_at' && this.$route.params.order === 'desc')
-            {
-                return this.tasks
-            }
-            else
-            {
-                sessionStorage.removeItem('tasks-sorting-id')
-                return this.tasks
-            }
-        },
-        tasksPriorityDesc: function () {
-            return this.tasks.sort((a,b) => {
-                return a.priority - b.priority
-            });
-        },
-        tasksPriorityAsc: function () {
-            return this.tasks.sort((a,b) => {
-                return b.priority - a.priority
-            });
-        },
-        tasksRunAtAsc: function () {
-            return this.tasks.sort((a,b) => {
-                return new Date(a.runAt) - new Date(b.runAt)
-            });
-        },
         isEditing(){
             return this.$store.getters.getIsEditing
         },
@@ -181,12 +175,15 @@ export default {
         },
     },
     created() {
-        this.getTasksByDateDesc();
+        this.getTasks();
         // this.getTasksByPriorityDesc();
     },
     updated() {
         this.selectOption();
         this.disableOption();
+    },
+    mounted() {
+        this.render();
     }
 }
 </script>

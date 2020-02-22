@@ -41,23 +41,21 @@ class TasksRepository extends ServiceEntityRepository
     /**
      * @return Tasks[] Returns an array of Tasks objects ordered by run_at DESC 
      */
-    public function getAllByUser($id)
+    public function getAllByRunAtQuery($id, $order)
     {
         return $this->createQueryBuilder('t')
             ->select('t')
             ->join(Lists::class, 'l', 'WITH', 't.list = l.id')
             ->where('l.user = ?1')
-            ->orderBy('t.run_at', 'DESC')
+            ->orderBy('t.run_at', $order)
             ->setParameter(1, $id)
-            ->getQuery()
-            ->getResult()
         ;
     }
 
     /**
      * @return Tasks[] Returns an array of Tasks objects ordered by priority 
      */
-    public function getAllByBriority($id, $order)
+    public function getAllByPriorityQuery($id, $order)
     {
         return $this->createQueryBuilder('t')
             ->select('t')
@@ -65,8 +63,6 @@ class TasksRepository extends ServiceEntityRepository
             ->where('l.user = ?1')
             ->orderBy('t.priority', $order)
             ->setParameter(1, $id)
-            ->getQuery()
-            ->getResult()
         ;
     }
 

@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\Serializer\SerializerService;
 use App\Service\UserService;
 use App\Service\ValidationService;
+use Knp\Component\Pager\PaginatorInterface;
 
 class TaskController extends AbstractFOSRestController
 {
@@ -40,13 +41,36 @@ class TaskController extends AbstractFOSRestController
     }
 
     /**
-     * @Route("/api/task", name="all_tasks", methods={"GET"})
+     * @Route("/api/tasks", name="all_tasks", methods={"GET"})
      */
-    public function getAllTasks()
+    public function getAllTasks(Request $request, PaginatorInterface $paginator)
     {
-        $results = $this->cache->cache('all-tasks', 120, ['all-cached-values', 'all-tasks'], function(){
+        $countPerPage = 10;
+        
+        $pageNumber = $request->query->getInt('page', 1);
+        $sort = $request->query->get('sort', 'run_at');
+        $order = $request->query->get('order', 'desc');
+        
+        $cacheKey = 'tasks-'. $sort . '-' . $order . '-' . $pageNumber;
+        
+        $results = $this->cache->cache($cacheKey, 120, ['all-cached-values', 'all-tasks'], function() use ($paginator, $pageNumber, $countPerPage, $sort, $order){
 
-            return $results = $this->tasksRepo->getAllByUser($this->user->getCurrentUser()->getId());
+            if($sort === 'run_at')
+            {
+                $queryBuilder = $this->tasksRepo->getAllByRunAtQuery($this->user->getCurrentUser()->getId(), $order);
+            }
+            elseif($sort === 'priority')
+            {
+                $queryBuilder = $this->tasksRepo->getAllByPriorityQuery($this->user->getCurrentUser()->getId(), $order);
+            }
+
+            $pagination = $paginator->paginate(
+                $queryBuilder,
+                $pageNumber,
+                $countPerPage
+            );
+
+            return $pagination;
 
         });
         
@@ -59,6 +83,7 @@ class TaskController extends AbstractFOSRestController
             $statusCode = 204;
         }
 
+        // $view = $this->view($pagination, 200);
         $view = $this->view($results, $statusCode);
         return $this->handleView($view);
     }

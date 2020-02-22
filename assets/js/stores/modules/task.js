@@ -14,6 +14,7 @@ export default {
         tasks: {
             tasks: {},
             loading: true,
+            pageNumber: 1,
         },
         currentTask: {
             id: Number,
@@ -51,7 +52,7 @@ export default {
             return state.taskEdit.task
         },
         getAllTasks: state => {
-            return state.tasks
+            return state.tasks.tasks
         },
     },
     mutations: {
@@ -68,7 +69,7 @@ export default {
             state.taskEdit.task = res
         },
         SET_TASKS: (state, value) => {
-            state.tasks = value
+            state.tasks.tasks = value
         },
         SET_TASK_ADD_MESSAGE: (state, message) => {
             state.taskAdd.message = message
@@ -94,10 +95,20 @@ export default {
         CLEAR_TASK_ADD_MESSAGE: state => {
             state.taskAdd.message = {}
         },
+        UPGRADE_PAGE: state => {
+            state.tasks.pageNumber++
+        },
     },
     actions: {
-        getTasksByDateDesc: context => {
-            axios.get('http://127.0.0.1:8000/api/task')
+        getTasks: (context, payload) => {
+            let pageNum = context.state.tasks.pageNumber;
+            axios.get('http://127.0.0.1:8000/api/tasks', {
+                params: {
+                    page: pageNum,
+                    sort: payload.sort,
+                    order: payload.order,
+                }
+            })
             .then((response) => {
                 context.commit('SET_TASKS_LOADING', false);
                 //check if this working fine when the status is 204
@@ -145,7 +156,7 @@ export default {
                     context.commit('SET_TASK_EDIT_MESSAGE', data)
                     context.commit('UPDATE_IS_EDITING', false)
                     context.commit('SET_IS_UPDATED', true)
-                    context.dispatch("getTasksByDateDesc")
+                    context.dispatch("getTasks")
                     context.dispatch("pushNotification")
                 }
             })
@@ -172,6 +183,9 @@ export default {
         },
         setTaskId: (context, id)  => {
             context.commit("SET_TASK_ID", id)   
+        },
+        setTasksLoading: (context, value)  => {
+            context.commit("SET_TASKS_LOADING", value)
         },
         setTaskEditLoading: (context, value)  => {
             context.commit("SET_TASK_EDIT_LOADING", value)
@@ -200,6 +214,9 @@ export default {
         },
         clearTaskEditMessage: context => {
             context.commit('CLEAR_TASK_EDIT_MESSAGE')
+        },
+        upgradePage: context => {
+            context.commit('UPGRADE_PAGE')
         },
     },
 }
