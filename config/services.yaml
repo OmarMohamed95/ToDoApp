@@ -31,6 +31,8 @@ services:
     App\Service\Serializer\SerializerService:
 
     App\Service\UserService:
+
+    App\Service\MailerService:
                     
     App\Service\ValidationService:
 
