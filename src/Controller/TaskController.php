@@ -2,8 +2,7 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use FOS\RestBundle\Controller\AbstractFOSRestController;
+use App\Controller\BaseController;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tasks;
@@ -23,7 +22,7 @@ use App\Service\UserService;
 use App\Service\ValidationService;
 use Knp\Component\Pager\PaginatorInterface;
 
-class TaskController extends AbstractFOSRestController
+class TaskController extends BaseController
 {
     private $entityManager;
     private $tasksRepo;
@@ -55,12 +54,10 @@ class TaskController extends AbstractFOSRestController
         
         $results = $this->cache->cache($cacheKey, 120, ['all-cached-values', 'all-tasks'], function() use ($paginator, $pageNumber, $countPerPage, $sort, $order){
 
-            if($sort === 'run_at')
-            {
+            if($sort === 'run_at'){
                 $queryBuilder = $this->tasksRepo->getAllByRunAtQuery($this->user->getCurrentUser()->getId(), $order);
             }
-            elseif($sort === 'priority')
-            {
+            elseif($sort === 'priority'){
                 $queryBuilder = $this->tasksRepo->getAllByPriorityQuery($this->user->getCurrentUser()->getId(), $order);
             }
 
@@ -74,18 +71,12 @@ class TaskController extends AbstractFOSRestController
 
         });
         
-        if($results)
-        {
-            $statusCode = 200;
-        }
-        else
-        {   
-            $statusCode = 204;
+        if(!$results){
+            return $this->baseView(null, 204);
         }
 
         // $view = $this->view($pagination, 200);
-        $view = $this->view($results, $statusCode);
-        return $this->handleView($view);
+        return $this->baseView($results);
     }
 
     /**
@@ -99,17 +90,11 @@ class TaskController extends AbstractFOSRestController
             
         });
         
-        if($results)
-        {
-            $statusCode = 200;
-        }
-        else
-        {   
-            $statusCode = 204;
+        if(!$results){
+            return $this->baseView(null, 204);
         }
 
-        $view = $this->view($results, $statusCode);
-        return $this->handleView($view);
+        return $this->baseView($results);
     }
 
     /**
@@ -123,8 +108,7 @@ class TaskController extends AbstractFOSRestController
 
         $this->cache->invalidateCache(['unnotified-tasks']);
 
-        $view = $this->view([], 204);
-        return $this->handleView($view);
+        return $this->baseView([], 204);
     }
 
     /**
@@ -136,17 +120,11 @@ class TaskController extends AbstractFOSRestController
         $results = $this->tasksRepo->findOneBy(['id' => $id]);
 
         
-        if($results)
-        {
-            $statusCode = 200;
-        }
-        else
-        {   
-            $statusCode = 204;
+        if(!$results){
+            return $this->baseView($results, 204);
         }
 
-        $view = $this->view($results, $statusCode);
-        return $this->handleView($view);
+        return $this->baseView($results);
     }
 
     /**
@@ -170,11 +148,11 @@ class TaskController extends AbstractFOSRestController
         $task = $this->tasksRepo->find($id);
         $lists = $this->getDoctrine()->getRepository(Lists::class)->find($list);
 
-        if($runAt > date("Y-m-d H:i:s"))
-        {
+        if($runAt > date("Y-m-d H:i:s")){
             $task->setIsNotified(false);
             $task->setRunAt($runAt);
         }
+
         $task->setTitle(trim($title));
         $task->setNote(trim($note));
         $task->setList($lists);
@@ -183,12 +161,10 @@ class TaskController extends AbstractFOSRestController
 
         $errors = $validator->validate($task);
 
-        if(count($errors) > 0)
-        {
+        if(count($errors) > 0){
             $violations = $validationService->identifyErrors($errors);
 
-            $view = $this->view($violations, 400);
-            return $this->handleView($view);
+            return $this->baseView($violations, 400);
         }
 
         $this->entityManager->flush();
@@ -200,9 +176,7 @@ class TaskController extends AbstractFOSRestController
         // check if the tag or the key exists first before invalidating the cache
         $this->cache->invalidateCache(['all-tasks', 'unnotified-tasks']);
         
-        $view = $this->view($response, 200);
-        
-        return $this->handleView($view);
+        return $this->baseView($response);
     }
 
     /**
@@ -235,12 +209,10 @@ class TaskController extends AbstractFOSRestController
 
         $errors = $validator->validate($tasks);
 
-        if(count($errors) > 0)
-        {
+        if(count($errors) > 0){
             $violations = $validationService->identifyErrors($errors);
 
-            $view = $this->view($violations, 400);
-            return $this->handleView($view);
+            return $this->baseView($violations, 400);
         }
 
         $this->entityManager->persist($tasks);
@@ -253,8 +225,6 @@ class TaskController extends AbstractFOSRestController
         // check if the tag or the key exists first before invalidating the cache
         $this->cache->invalidateCache(['all-tasks', 'unnotified-tasks']);
         
-        $view = $this->view($response, 200);
-        
-        return $this->handleView($view);
+        return $this->baseView($response, 201);
     }
 }
