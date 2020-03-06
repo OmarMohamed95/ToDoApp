@@ -11,7 +11,6 @@
         </select>
         <router-link to="/task/add" class="btn btn-outline-primary col-md-2 offset-md-5" style="border-radius: 20px">Add +</router-link>
         <hr>
-        <loading v-if="loading"></loading>
         <div v-show="tasks.length" class="" id="all-tasks">
             <div :key="k" v-for="(task,k) in tasks">
                 <div v-if="$route.params.sort === 'priority'">
@@ -58,11 +57,12 @@
                     </div>
                 </div>                    
             </div>
+            <loading v-if="loading"></loading>
             <div>
                 <button @click="upgradePage" class="btn btn-outline-primary mt-3 mb-5 col-md-12">Show More</button>
             </div>
         </div>
-        <div v-if="!tasks.length">
+        <div v-if="tasks.length === 0">
             <p class="alert alert-danger text-center">No tasks found!</p>
         </div>
     </div>  
@@ -112,6 +112,8 @@ export default {
             }
         },
         sortLink: function (event) {
+            this.$store.dispatch('resetPageToOne');
+            this.$store.dispatch('clearTasks');
             this.setSelectedInSession();
             this.$router.push(`/task/${event.target.value}`)
         },
@@ -140,32 +142,14 @@ export default {
             let sort = this.$route.params.sort;
             let order = this.$route.params.order;
 
+            this.$store.dispatch('setTasksLoading', true);
             this.$store.dispatch("upgradePage")
             this.$store.dispatch('getTasks', {sort: sort, order: order})
-        },
-        render: function(){
-            let ele = document.getElementById('all-tasks');
-            let textnode = document.createTextNode("Water");
-            ele.appendChild(textnode);
-        },
-
-    //     getTasksByPriorityDesc: function(){
-    //         axios.get('http://127.0.0.1:8000/api/task/priority', {
-    //             params: {
-    //                 order: 'desc'
-    //             }
-    //         })
-    //         .then((response) => {
-    //             this.test = (response.status === 204) ? response.text() : response.data;
-    //         })
-    //         .catch((error) => {
-    //             throw error;
-    //         });
-    //     }
+        }
     },
     computed: {
-        tasks: function () {
-            return this.$store.getters.getAllTasks;
+        tasks(){
+            return this.$store.getters.getAllTasks
         },
         isEditing(){
             return this.$store.getters.getIsEditing
@@ -176,14 +160,10 @@ export default {
     },
     created() {
         this.getTasks();
-        // this.getTasksByPriorityDesc();
     },
     updated() {
         this.selectOption();
         this.disableOption();
-    },
-    mounted() {
-        this.render();
     }
 }
 </script>

@@ -1,3 +1,4 @@
+import Vue from "vue";
 import axios from "axios";
 
 export default {
@@ -11,8 +12,8 @@ export default {
             loading: true,
             message: {},
         },
+        allTasks: [],
         tasks: {
-            tasks: {},
             loading: true,
             pageNumber: 1,
         },
@@ -52,7 +53,7 @@ export default {
             return state.taskEdit.task
         },
         getAllTasks: state => {
-            return state.tasks.tasks
+            return state.allTasks
         },
     },
     mutations: {
@@ -68,8 +69,12 @@ export default {
         SET_EDIT_TASK: (state, res) => {
             state.taskEdit.task = res
         },
-        SET_TASKS: (state, value) => {
-            state.tasks.tasks = value
+        SET_TASKS: (state, tasks) => {
+            // Vue.set(state.tasks, 'tasks', value)
+            for (let task of tasks) {
+                state.allTasks.push(task);
+            }
+            // console.log(typeof state.tasks.allTasks);
         },
         SET_TASK_ADD_MESSAGE: (state, message) => {
             state.taskAdd.message = message
@@ -97,6 +102,12 @@ export default {
         },
         UPGRADE_PAGE: state => {
             state.tasks.pageNumber++
+        },
+        RESET_PAGE: state => {
+            state.tasks.pageNumber = 1
+        },
+        CLEAR_TASKS: state => {
+            state.allTasks = []
         },
     },
     actions: {
@@ -217,6 +228,12 @@ export default {
         },
         upgradePage: context => {
             context.commit('UPGRADE_PAGE')
+        },
+        resetPageToOne: context => {
+            context.commit('RESET_PAGE')
+        },
+        clearTasks: context => {
+            context.commit('CLEAR_TASKS')
         },
     },
 }
