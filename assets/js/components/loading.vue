@@ -12,8 +12,4 @@ export default {
 
 <style scoped>
 
-.loading-spinner{
-    margin-top: 15%;
-}
-
 </style>
