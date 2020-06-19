@@ -1,3 +1,3 @@
 # ToDoApp
 
-To-Do app made with Symfony and Vue.js
+To-Do app built with Symfony and Vue.js
