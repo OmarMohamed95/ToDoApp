@@ -23,7 +23,7 @@ class TaskFixtures extends Fixture implements DependentFixtureInterface
             $list->setRunAt(date("Y-m-d", strtotime('tomorrow')));
 
             $manager->persist($list);
-            $this->addReference('list-' . $i, $list);
+            $this->addReference('task-' . $i, $list);
         }
 
         $manager->flush();
