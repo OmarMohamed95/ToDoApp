@@ -11,11 +11,16 @@ use App\Service\UserService;
 use App\Util\CacheInterface;
 
 /**
+ * Auth controller
+ *
  * @Route("/api/")
  */
 class AuthController extends BaseController
 {
+    /** @var Request */
     private $request;
+
+    /** @var Response */
     private $response;
 
     public function __construct()
@@ -25,16 +30,19 @@ class AuthController extends BaseController
     }
 
     /**
+     * Check if the user is authenticated
+     *
      * @Route("auth/check", name="check_auth", methods={"GET"})
+     *
+     * @return Response
      */
     public function checkIfAuthenticated()
     {
         $refreshToken = $this->request->cookies->get('REFRESH_TOKEN');
 
-        if($refreshToken){
+        if ($refreshToken) {
             $response = ['isAuthenticated' => true];
-        }
-        else{
+        } else {
             $response = ['isAuthenticated' => false];
         }
         
@@ -42,13 +50,19 @@ class AuthController extends BaseController
     }
 
     /**
+     * Get current user data
+     *
      * @Route("auth/user", name="user", methods={"GET"})
+     *
+     * @param UserService $user
+     *
+     * @return Response
      */
     public function getCurrentUser(UserService $user)
     {
         $currentUser = $user->getCurrentUser(['id' => 'getId', 'username' => 'getUsername']);
 
-        if($currentUser === null){
+        if ($currentUser === null) {
             return $this->baseView(null, 204);
         }
 
@@ -56,7 +70,13 @@ class AuthController extends BaseController
     }
 
     /**
+     * Logout action
+     *
      * @Route("logout", name="logout", methods={"GET"})
+     *
+     * @param CacheInterface $redisCache
+     *
+     * @return Response
      */
     public function logout(CacheInterface $redisCache)
     {

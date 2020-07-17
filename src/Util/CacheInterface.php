@@ -4,13 +4,42 @@ namespace App\Util;
 
 interface CacheInterface
 {
+    /**
+     * Cache
+     *
+     * @param string $name
+     * @param int $time
+     * @param array $tags
+     * @param callable $calculations
+     *
+     * @return mixed
+     */
+    public function cache(string $name, int $time, array $tags, callable $calculations);
 
-    public function cache($name, $time, $tags, $calculations);
+    /**
+     * Get item
+     *
+     * @param string $key
+     *
+     * @return mixed
+     */
+    public function getItem(string $key);
 
-    public function getItem($key);
-
-    public function deleteCache($key);
+    /**
+     * Delete cache
+     *
+     * @param string $key
+     *
+     * @return void
+     */
+    public function deleteCache(string $key): void;
     
-    public function invalidateCache($tag);
-
+    /**
+     * Invalidate cache
+     *
+     * @param array $tag
+     *
+     * @return void
+     */
+    public function invalidateCache(array $tag): void;
 }

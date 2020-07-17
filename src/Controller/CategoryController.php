@@ -18,37 +18,50 @@ use FOS\RestBundle\Controller\Annotations\RequestParam;
 use FOS\RestBundle\Controller\Annotations\FileParam;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\JsonResponse;
-// use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+/**
+ * Category controller
+ */
 class CategoryController extends AbstractFOSRestController
 {
+    /** @var CategoryRepository */
     private $categoryRepo;
-    private $entityManager;
-    private $serializer;
-    // private $uploadsBaseUrl;
 
-    public function __construct(CategoryRepository $categoryRepo, EntityManagerInterface $entityManager, SerializerService $serializer)
-    {
+    /** @var EntityManagerInterface */
+    private $entityManager;
+
+    /** @var SerializerService */
+    private $serializer;
+
+    public function __construct(
+        CategoryRepository $categoryRepo,
+        EntityManagerInterface $entityManager,
+        SerializerService $serializer
+    ) {
         $this->categoryRepo = $categoryRepo;
         $this->entityManager = $entityManager;
-
         $this->serializer = $serializer->init();
-
-        // $this->uploadsBaseUrl = $uploads_base_url;
     }
 
     /**
+     * Get all categories
+     *
      * @Route("/api/category", name="category", methods={"GET"})
+     *
+     * @param CacheInterface $redisCache
+     *
+     * @return Response
      */
     public function getAllCategories(CacheInterface $redisCache)
     {
-        $results = $redisCache->cache('all-categories', 120, ['all-categories'], function(){
-
-            return $results = $this->categoryRepo->findAll();
-
-        });
-
-        // return new Response(json_encode($results));
+        $results = $redisCache->cache(
+            'all-categories',
+            120,
+            ['all-categories'],
+            function () {
+                return $results = $this->categoryRepo->findAll();
+            }
+        );
 
         $view = $this->view($results, Response::HTTP_OK);
 
@@ -56,14 +69,21 @@ class CategoryController extends AbstractFOSRestController
     }
 
     /**
+     * Add new category
+     *
      * @RequestParam(
      *   name="name",
      *   nullable=false
      * )
-     * 
+     *
      * @FileParam(name="image", image=true, default=NULL, nullable=true)
-     * 
+     *
      * @Route("/api/category", name="category_add", methods={"POST"})
+     *
+     * @param ParamFetcher $paramFetcher
+     * @param FileUploader $fileUploader
+     *
+     * @return Response
      */
     public function add(ParamFetcher $paramFetcher, FileUploader $fileUploader)
     {
@@ -72,10 +92,8 @@ class CategoryController extends AbstractFOSRestController
         $name = $paramFetcher->get('name');
         $image = $paramFetcher->get('image');
 
-        if($name){
-
-            if($image)
-            {
+        if ($name) {
+            if ($image) {
                 $fileUploader->setDirectoryName('category');
                 $fileName = $fileUploader->upload($image)->getFileName();
 
@@ -86,31 +104,16 @@ class CategoryController extends AbstractFOSRestController
             $this->entityManager->persist($category);
             $this->entityManager->flush();
 
-            // $response = $this->serializer->serialize($category, 'json');
-
             $response = [
                 'success' => 'Category has been added successfully!',
                 'category' => $category
             ];
 
-            /* -------------------------------------------------- invalidate the cache ----------------------------------  */
-
             $view = $this->view($response, 200);
 
             return $this->handleView($view);
-
-            // return new Response($response, 200);
-            
-            // return new Response(json_encode([
-            //     'success' => 'Category has been added successfully!',
-            //     'obj' => $response
-            // ]));
         }
 
-        // $view = $this->view(new JsonResponse($data), 400);
-
-        // return $this->handleView($view);
-        
         return new response(json_encode(['name_field' => 'name is required']));
     }
 }

@@ -11,9 +11,21 @@ use FOS\RestBundle\Controller\Annotations\QueryParam;
 use FOS\RestBundle\Controller\Annotations\FileParam;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+/**
+ * Base controller
+ */
 abstract class BaseController extends AbstractFOSRestController
 {
-    public function baseView($data = null, $statusCode = 200, array $headers = [])
+    /**
+     * Base view
+     *
+     * @param mixed $data
+     * @param int $statusCode
+     * @param array $headers
+     *
+     * @return Response
+     */
+    public function baseView($data = null, int $statusCode = 200, array $headers = [])
     {
         $view = $this->view($data, $statusCode, $headers);
         return $this->handleView($view);

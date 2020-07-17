@@ -6,10 +6,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
+/**
+ * MailerService
+ */
 class MailerService extends AbstractController
 {
+    /** @var array */
     private $data = [];
+
+    /** @var array */
     private $emailData = ['from', 'to', 'subject', 'text'];
+
+    /** @var MailerInterface */
     private $mailer;
 
     public function __construct(MailerInterface $mailer)
@@ -17,37 +25,59 @@ class MailerService extends AbstractController
         $this->mailer = $mailer;
     }
 
-    public function setData($data)
+    /**
+     * Set data
+     *
+     * @param array $data
+     *
+     * @throws Exception
+     *
+     * @return void
+     */
+    public function setData(array $data): void
     {
         $this->data = $data;
 
         try {
-
             $this->validateData();
-
         } catch (\Exception $e) {
-
             echo $e->getMessage();
-
             die;
         }
     }
 
-    public function sendEmail()
+    /**
+     * Send email action
+     *
+     * @return void
+     */
+    public function sendEmail(): void
     {
         $email = $this->createEmail();
         $sentEmail = $this->mailer->send($email);
     }
 
-    private function validateData()
+    /**
+     * validate data
+     *
+     * @throws Exception
+     *
+     * @return void
+     */
+    private function validateData(): void
     {
-        foreach($this->emailData as $v) {
-            if(!array_key_exists($v, $this->data)){
-                throw new \Exception('This key "' . $v .'" is missed, You should provide it!');
+        foreach ($this->emailData as $v) {
+            if (!array_key_exists($v, $this->data)) {
+                throw new \Exception(sprintf('This key %s is missed, You should provide it!', $v));
             }
         }
     }
 
+    /**
+     * Create email
+     *
+     * @return Email
+     */
     private function createEmail()
     {
         $email = (new Email())

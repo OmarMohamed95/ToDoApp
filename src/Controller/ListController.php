@@ -19,16 +19,33 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\UserService;
 use App\Service\ValidationService;
 
+/**
+ * List Controller
+ */
 class ListController extends BaseController
 {
+    /** @var ListsRepository */
     private $listRepo;
+
+    /** @var EntityManagerInterface */
     private $entityManager;
+
+    /** @var SerializerService */
     private $serializer;
+
+    /** @var CacheInterface */
     private $cache;
+
+    /** @var UserService */
     private $user;
 
-    public function __construct(ListsRepository $listRepo, EntityManagerInterface $entityManager, SerializerService $serializer, CacheInterface $redisCache, UserService $user)
-    {
+    public function __construct(
+        ListsRepository $listRepo,
+        EntityManagerInterface $entityManager,
+        SerializerService $serializer,
+        CacheInterface $redisCache,
+        UserService $user
+    ) {
         $this->listRepo = $listRepo;
         $this->entityManager = $entityManager;
         $this->serializer = $serializer->init();
@@ -37,17 +54,28 @@ class ListController extends BaseController
     }
 
     /**
+     * Get all lists
+     *
      * @Route("/api/list", name="list", methods={"GET"})
+     *
+     * @return Response
      */
     public function getAllLists()
     {
-        $results = $this->cache->cache('all-lists', 120, ['all-cached-values', 'all-lists'], function(){
+        $results = $this->cache->cache(
+            'all-lists',
+            120,
+            ['all-cached-values', 'all-lists'],
+            function () {
+                return $this->listRepo->findBy(
+                    [
+                        'user' => $this->user->getCurrentUser()->getId()
+                    ]
+                );
+            }
+        );
 
-            return $results = $this->listRepo->findBy(['user' => $this->user->getCurrentUser()->getId()]);
-
-        });
-
-        if(!$results){
+        if (!$results) {
             return $this->baseView(null, 204);
         }
 
@@ -55,12 +83,20 @@ class ListController extends BaseController
     }
 
     /**
+     * Add new list
+     *
      * @RequestParam(
      *   name="title",
      *   nullable=false
      * )
-     * 
+     *
      * @Route("/api/list", name="list_add", methods={"POST"})
+     *
+     * @param ParamFetcher $paramFetcher
+     * @param ValidatorInterface $validator
+     * @param ValidationService $validationService
+     *
+     * @return Response
      */
     public function add(ParamFetcher $paramFetcher, ValidatorInterface $validator, ValidationService $validationService)
     {
@@ -74,10 +110,8 @@ class ListController extends BaseController
         
         $errors = $validator->validate($list);
 
-        if(count($errors) > 0){
-
+        if (count($errors) > 0) {
             $violations = $validationService->identifyErrors($errors);
-
             return $this->baseView($violations, 400);
         }
 

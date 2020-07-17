@@ -22,16 +22,33 @@ use App\Service\UserService;
 use App\Service\ValidationService;
 use Knp\Component\Pager\PaginatorInterface;
 
+/**
+ * TaskController
+ */
 class TaskController extends BaseController
 {
+    /** @var EntityManagerInterface */
     private $entityManager;
+    
+    /** @var TasksRepository */
     private $tasksRepo;
+
+    /** @var SerializerService */
     private $serializer;
+
+    /** @var CacheInterface */
     private $cache;
+
+    /** @var UserService */
     private $user;
 
-    public function __construct(EntityManagerInterface $entityManager, TasksRepository $tasksRepo, SerializerService $serializer, CacheInterface $redisCache, UserService $user)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        TasksRepository $tasksRepo,
+        SerializerService $serializer,
+        CacheInterface $redisCache,
+        UserService $user
+    ) {
         $this->entityManager = $entityManager;
         $this->tasksRepo = $tasksRepo;
         $this->serializer = $serializer->init();
@@ -40,7 +57,14 @@ class TaskController extends BaseController
     }
 
     /**
+     * Get all tasks
+     *
      * @Route("/api/tasks", name="all_tasks", methods={"GET"})
+     *
+     * @param Request $request
+     * @param PaginatorInterface $paginator
+     *
+     * @return Response
      */
     public function getAllTasks(Request $request, PaginatorInterface $paginator)
     {
@@ -52,45 +76,65 @@ class TaskController extends BaseController
         
         $cacheKey = 'tasks-'. $sort . '-' . $order . '-' . $pageNumber;
         
-        $results = $this->cache->cache($cacheKey, 120, ['all-cached-values', 'all-tasks'], function() use ($paginator, $pageNumber, $countPerPage, $sort, $order){
+        $results = $this->cache->cache(
+            $cacheKey,
+            120,
+            ['all-cached-values', 'all-tasks'],
+            function () use ($paginator, $pageNumber, $countPerPage, $sort, $order) {
 
-            if($sort === 'run_at'){
-                $queryBuilder = $this->tasksRepo->getAllByRunAtQuery($this->user->getCurrentUser()->getId(), $order);
+                if ($sort === 'run_at') {
+                    $queryBuilder = $this->tasksRepo->getAllByRunAtQuery(
+                        $this->user->getCurrentUser()->getId(),
+                        $order
+                    );
+                } elseif ($sort === 'priority') {
+                    $queryBuilder = $this->tasksRepo->getAllByPriorityQuery(
+                        $this->user->getCurrentUser()->getId(),
+                        $order
+                    );
+                }
+
+                $pagination = $paginator->paginate(
+                    $queryBuilder,
+                    $pageNumber,
+                    $countPerPage
+                );
+
+                return $pagination;
             }
-            elseif($sort === 'priority'){
-                $queryBuilder = $this->tasksRepo->getAllByPriorityQuery($this->user->getCurrentUser()->getId(), $order);
-            }
-
-            $pagination = $paginator->paginate(
-                $queryBuilder,
-                $pageNumber,
-                $countPerPage
-            );
-
-            return $pagination;
-
-        });
+        );
         
-        if(!$results){
+        if (!$results) {
             return $this->baseView(null, 204);
         }
 
-        // $view = $this->view($pagination, 200);
         return $this->baseView($results);
     }
 
     /**
+     * Get unnotified tasks
+     *
      * @Route("/api/task/unnotifed", name="unnotifed_tasks", methods={"GET"})
+     *
+     * @return Response
      */
     public function getUnnotifiedTasks()
     {
-        $results = $this->cache->cache('unnotified-tasks', 120, ['all-cached-values', 'unnotified-tasks'], function(){
-
-            return $results = $this->tasksRepo->getAllUnnotifiedTasks($this->user->getCurrentUser()->getId());
-            
-        });
+        $results = $this->cache->cache(
+            'unnotified-tasks',
+            120,
+            ['all-cached-values', 'unnotified-tasks'],
+            function () {
+                return $this->tasksRepo->getAllUnnotifiedTasks(
+                    $this
+                    ->user
+                    ->getCurrentUser()
+                    ->getId()
+                );
+            }
+        );
         
-        if(!$results){
+        if (!$results) {
             return $this->baseView(null, 204);
         }
 
@@ -98,7 +142,13 @@ class TaskController extends BaseController
     }
 
     /**
+     * Update notify status
+     *
      * @Route("/api/task/notified/{id}", name="update_notify_status", methods={"PATCH"})
+     *
+     * @param int $id
+     *
+     * @return Response
      */
     public function updateNotifyStatus(int $id)
     {
@@ -112,15 +162,19 @@ class TaskController extends BaseController
     }
 
     /**
+     * Get task by id
+     *
      * @Route("/api/task/{id}", name="task_by_id", methods={"GET"})
+     *
+     * @param int $id
+     *
+     * @return Response
      */
     public function getTaskById(int $id)
     {
-
         $results = $this->tasksRepo->findOneBy(['id' => $id]);
 
-        
-        if(!$results){
+        if (!$results) {
             return $this->baseView($results, 204);
         }
 
@@ -128,16 +182,29 @@ class TaskController extends BaseController
     }
 
     /**
+     * Edit task
+     *
      * @Route("/api/task/{id}", name="edit_task", methods={"PUT"})
-     * 
+     *
      * @RequestParam(name="title", nullable=true)
      * @RequestParam(name="note", nullable=true)
      * @RequestParam(name="list", nullable=true)
      * @RequestParam(name="priority", nullable=true)
      * @RequestParam(name="run_at", nullable=true)
+     *
+     * @param int $id
+     * @param ParamFetcher $paramFetcher
+     * @param ValidatorInterface $validator
+     * @param ValidationService $validationService
+     *
+     * @return Response
      */
-    public function edit(int $id, ParamFetcher $paramFetcher, ValidatorInterface $validator, ValidationService $validationService)
-    {
+    public function edit(
+        int $id,
+        ParamFetcher $paramFetcher,
+        ValidatorInterface $validator,
+        ValidationService $validationService
+    ) {
         //make service to handle this, just send the name of the fields and it will return array of values.
         $title = $paramFetcher->get('title');
         $note = $paramFetcher->get('note');
@@ -148,7 +215,7 @@ class TaskController extends BaseController
         $task = $this->tasksRepo->find($id);
         $lists = $this->getDoctrine()->getRepository(Lists::class)->find($list);
 
-        if($runAt > date("Y-m-d H:i:s")){
+        if ($runAt > date("Y-m-d H:i:s")) {
             $task->setIsNotified(false);
             $task->setRunAt($runAt);
         }
@@ -161,7 +228,7 @@ class TaskController extends BaseController
 
         $errors = $validator->validate($task);
 
-        if(count($errors) > 0){
+        if (count($errors) > 0) {
             $violations = $validationService->identifyErrors($errors);
 
             return $this->baseView($violations, 400);
@@ -180,16 +247,27 @@ class TaskController extends BaseController
     }
 
     /**
+     * Add new task
+     *
      * @Route("/api/task", name="add_task", methods={"POST"})
-     * 
+     *
      * @RequestParam(name="title", nullable=false)
      * @RequestParam(name="note", nullable=true)
      * @RequestParam(name="list", nullable=false)
      * @RequestParam(name="priority", nullable=true)
      * @RequestParam(name="run_at", nullable=false)
+     *
+     * @param ParamFetcher $paramFetcher
+     * @param ValidatorInterface $validator
+     * @param ValidationService $validationService
+     *
+     * @return Response
      */
-    public function add(ParamFetcher $paramFetcher, ValidatorInterface $validator, ValidationService $validationService)
-    {
+    public function add(
+        ParamFetcher $paramFetcher,
+        ValidatorInterface $validator,
+        ValidationService $validationService
+    ) {
         $tasks = new Tasks();
 
         //make service to handle this, just send the name of the fields and it will return array of values.
@@ -209,7 +287,7 @@ class TaskController extends BaseController
 
         $errors = $validator->validate($tasks);
 
-        if(count($errors) > 0){
+        if (count($errors) > 0) {
             $violations = $validationService->identifyErrors($errors);
 
             return $this->baseView($violations, 400);

@@ -17,13 +17,26 @@ use FOS\RestBundle\Controller\Annotations\FileParam;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+/**
+ * Google login controller
+ */
 class GoogleLoginController extends AbstractFOSRestController
 {
+    /** @var string */
     private $clientID;
+
+    /** @var string */
     private $clientSecret;
+
+    /** @var string */
     private $redirectUri;
+
+    /** @var Google_Client */
     private $client;
+
+    /** @var array */
     private $user;
+
     const SOURCE = 1;
 
     public function __construct($clientID, $clientSecret, $redirectUri)
@@ -35,7 +48,12 @@ class GoogleLoginController extends AbstractFOSRestController
         $this->googleClient();
     }
 
-    public function googleClient()
+    /**
+     * Create google client
+     *
+     * @return void
+     */
+    public function googleClient(): void
     {
         $this->client = new \Google_Client();
         $this->client->setClientId($this->clientID);
@@ -46,7 +64,11 @@ class GoogleLoginController extends AbstractFOSRestController
     }
 
     /**
+     * Redirect action
+     *
      * @Route("/login/google", name="google_login", methods={"GET"})
+     *
+     * @return Response
      */
     public function googleLoginTemplate()
     {
@@ -55,7 +77,13 @@ class GoogleLoginController extends AbstractFOSRestController
     }
 
     /**
+     * Google login callback
+     *
      * @Route("api/login/google/callback", name="google_login_callback", methods={"GET"})
+     *
+     * @param UserService $userService
+     *
+     * @return Response
      */
     public function googleLoginCallback(UserService $userService)
     {
@@ -71,8 +99,7 @@ class GoogleLoginController extends AbstractFOSRestController
 
             $user = $userService->checkIfUserExists($this->user['email']);
 
-            if(!$user)
-            {
+            if (!$user) {
                 $this->addUser($userService);
             }
 
@@ -81,13 +108,19 @@ class GoogleLoginController extends AbstractFOSRestController
             // $view = $this->routeRedirectView('home_index', [], 301);
             $view = $this->redirectView('http://127.0.0.1:8000/task', 301);
             return $this->handleView($view);
-          } 
+        }
     }
 
-    public function addUser(UserService $userService)
+    /**
+     * Add new user
+     *
+     * @param UserService $userService
+     *
+     * @return void
+     */
+    private function addUser(UserService $userService): void
     {
         $userService->setCredentials($this->user);
         $userService->add();
     }
-    
 }

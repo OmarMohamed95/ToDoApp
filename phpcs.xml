@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="ToDoApp Code Standards">
+    <description>
+        PHPCS config file
+    </description>
+
+    <exclude-pattern>/tests</exclude-pattern>
+    <exclude-pattern>/src/migrations</exclude-pattern>
+
+    <rule ref="PSR2"/>
+
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="150"/>
+        </properties>
+    </rule>
+</ruleset>

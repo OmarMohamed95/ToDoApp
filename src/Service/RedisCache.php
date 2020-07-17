@@ -9,11 +9,15 @@ use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 
+/**
+ * RedisCache
+ */
 class RedisCache extends AbstractController implements CacheInterface
 {
+    /** @var RedisAdapter */
     private $client;
-    private $time;
-    private $tags;
+
+    /** @var TagAwareAdapter */
     private $cache;
 
     public function __construct()
@@ -24,7 +28,6 @@ class RedisCache extends AbstractController implements CacheInterface
             
             // provide a string dsn
             'redis://localhost:6379',
-            
             // associative array of configuration options
             [
                 'compression' => true,
@@ -36,49 +39,74 @@ class RedisCache extends AbstractController implements CacheInterface
                 'read_timeout' => 0,
                 'retry_interval' => 0,
                 'class' => '\Predis\Client'
-                ]
-                
-            );
+            ]
+        );
 
-        // Redis Adapter
         $RedisAdapter = new RedisAdapter($this->client);
         
         $this->cache = new TagAwareAdapter($RedisAdapter);
     }
 
-    public function cache($name, $time, $tags, $calculations)
-    {       
-        $cachedValue = $this->cache->get($name, function(ItemInterface $itemInterface) use ($time, $tags, $calculations){
+    /**
+     * Cache
+     *
+     * @param string $name
+     * @param int $time
+     * @param array $tags
+     * @param callable $calculations
+     *
+     * @return mixed
+     */
+    public function cache(string $name, int $time, array $tags, callable $calculations)
+    {
+        $cachedValue = $this->cache->get(
+            $name,
+            function (ItemInterface $itemInterface) use ($time, $tags, $calculations) {
+                $itemInterface->expiresAfter($time);
+                $itemInterface->tag($tags);
 
-            $itemInterface->expiresAfter($time);
-            $itemInterface->tag($tags);
-
-            if(is_callable($calculations))
-            return call_user_func($calculations);
-
-        });
+                if (is_callable($calculations)) {
+                    return call_user_func($calculations);
+                }
+            }
+        );
 
         return $cachedValue;
     }
 
-    public function getItem($key)
+    /**
+     * Get item
+     *
+     * @param string $key
+     *
+     * @return mixed
+     */
+    public function getItem(string $key)
     {
         return $this->cache->getItem($key);
     }
 
-    public function deleteCache($key)
+    /**
+     * Delete cache
+     *
+     * @param string $key
+     *
+     * @return void
+     */
+    public function deleteCache(string $key): void
     {
         $this->cache->delete($key);
     }
 
-    public function invalidateCache($tag)
+    /**
+     * Invalidate cache
+     *
+     * @param array $tag
+     *
+     * @return void
+     */
+    public function invalidateCache(array $tag): void
     {
         $this->cache->invalidateTags($tag);
     }
-        
-    // public function fileSystem()
-    // {
-    //     // Adapter for cached items
-    //     $this->FilesystemAdapter = new FilesystemAdapter();
-    // }
 }

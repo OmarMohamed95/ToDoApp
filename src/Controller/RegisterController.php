@@ -13,13 +13,20 @@ use App\Service\UserService;
 class RegisterController extends BaseController
 {
     /**
+     * Register action
+     *
      * @RequestParam(name="username", nullable=false)
      * @RequestParam(name="email", nullable=false)
      * @RequestParam(name="password", nullable=false)
-     * 
+     *
      * @FileParam(name="image", default=NULL, nullable=true, strict=false)
-     * 
+     *
      * @Route("/api/register", name="register", methods={"POST"})
+     *
+     * @param ParamFetcher $paramFetcher
+     * @param UserService $userService
+     *
+     * @return Response
      */
     public function register(ParamFetcher $paramFetcher, UserService $userService)
     {
@@ -32,7 +39,7 @@ class RegisterController extends BaseController
         $userService->add();
         $response = $userService->response();
 
-        if($response['statusCode'] === 200){
+        if ($response['statusCode'] === 200) {
             $userService->generateAccessToken();
         }
 

@@ -36,9 +36,9 @@ class TasksReportCommand extends Command
     {
         $output->writeln('Sending the report...');
         
-        $users = $this->GetUsersWeeklyInfo();
+        $users = $this->getUsersWeeklyInfo();
 
-        foreach($users as $key => $user) {
+        foreach ($users as $key => $user) {
             $this->sendEmail($user);
             
             $output->writeln($k + 1 . ' of ' . count($users) . ' has been sent.');
@@ -60,8 +60,8 @@ class TasksReportCommand extends Command
         $this->mailerService->sendEmail();
     }
 
-    private function GetUsersWeeklyInfo()
+    private function getUsersWeeklyInfo()
     {
-        return $this->userRepo->GetUsersWeeklyInfo();
+        return $this->userRepo->getUsersWeeklyInfo();
     }
 }
