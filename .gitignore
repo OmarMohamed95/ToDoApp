@@ -29,3 +29,7 @@ yarn-error.log
 ###> VSCode ###
 .vscode
 ###< VSCode ###
+
+###> Uploads ###
+/public/uploads
+###< Uploads ###
