@@ -18,6 +18,7 @@ use FOS\RestBundle\Controller\Annotations\QueryParam;
 use FOS\RestBundle\Controller\Annotations\FileParam;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\Serializer\SerializerService;
+use App\Service\TaskService;
 use App\Service\UserService;
 use App\Service\ValidationService;
 use Knp\Component\Pager\PaginatorInterface;
@@ -66,49 +67,28 @@ class TaskController extends BaseController
      *
      * @return Response
      */
-    public function getAllTasks(Request $request, PaginatorInterface $paginator)
-    {
-        $countPerPage = 10;
-        
+    public function getAllTasks(
+        Request $request,
+        PaginatorInterface $paginator,
+        TaskService $taskService
+    ) {
         $pageNumber = $request->query->getInt('page', 1);
         $sort = $request->query->get('sort', 'run_at');
         $order = $request->query->get('order', 'desc');
         
-        $cacheKey = 'tasks-'. $sort . '-' . $order . '-' . $pageNumber;
-        
-        $results = $this->cache->cache(
-            $cacheKey,
-            120,
-            ['all-cached-values', 'all-tasks'],
-            function () use ($paginator, $pageNumber, $countPerPage, $sort, $order) {
+        $tasksQuery = $taskService->getTasksByUser($this->getUser());
 
-                if ($sort === 'run_at') {
-                    $queryBuilder = $this->tasksRepo->getAllByRunAtQuery(
-                        $this->user->getCurrentUser()->getId(),
-                        $order
-                    );
-                } elseif ($sort === 'priority') {
-                    $queryBuilder = $this->tasksRepo->getAllByPriorityQuery(
-                        $this->user->getCurrentUser()->getId(),
-                        $order
-                    );
-                }
-
-                $pagination = $paginator->paginate(
-                    $queryBuilder,
-                    $pageNumber,
-                    $countPerPage
-                );
-
-                return $pagination;
-            }
+        $pagination = $paginator->paginate(
+            $tasksQuery,
+            $pageNumber,
+            10
         );
-        
-        if (!$results) {
-            return $this->baseView(null, 204);
+
+        if (!$pagination->getTotalItemCount()) {
+            return $this->baseView(null, Response::HTTP_NO_CONTENT);
         }
 
-        return $this->baseView($results);
+        return $this->baseView($pagination);
     }
 
     /**
@@ -284,14 +264,15 @@ class TaskController extends BaseController
         $tasks->setList($lists);
         $tasks->setPriority($priority);
         $tasks->setRunAt($runAt);
+        $tasks->setUser($this->getUser());
 
-        $errors = $validator->validate($tasks);
+        // $errors = $validator->validate($tasks);
 
-        if (count($errors) > 0) {
-            $violations = $validationService->identifyErrors($errors);
+        // if (count($errors) > 0) {
+        //     $violations = $validationService->identifyErrors($errors);
 
-            return $this->baseView($violations, 400);
-        }
+        //     return $this->baseView($violations, 400);
+        // }
 
         $this->entityManager->persist($tasks);
         $this->entityManager->flush();

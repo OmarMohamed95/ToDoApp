@@ -62,24 +62,15 @@ class ListController extends BaseController
      */
     public function getAllLists()
     {
-        $results = $this->cache->cache(
-            'all-lists',
-            120,
-            ['all-cached-values', 'all-lists'],
-            function () {
-                return $this->listRepo->findBy(
-                    [
-                        'user' => $this->user->getCurrentUser()->getId()
-                    ]
-                );
-            }
-        );
+        $lists = $this->listRepo->findBy([
+            'user' => $this->getUser()->getId()
+        ]);
 
-        if (!$results) {
+        if (!$lists) {
             return $this->baseView(null, 204);
         }
 
-        return $this->baseView($results);
+        return $this->baseView($lists);
     }
 
     /**
@@ -108,12 +99,12 @@ class ListController extends BaseController
         $list->setTitle(trim($title));
         $list->setUser($this->user->getCurrentUser());
         
-        $errors = $validator->validate($list);
+        // $errors = $validator->validate($list);
 
-        if (count($errors) > 0) {
-            $violations = $validationService->identifyErrors($errors);
-            return $this->baseView($violations, 400);
-        }
+        // if (count($errors) > 0) {
+        //     $violations = $validationService->identifyErrors($errors);
+        //     return $this->baseView($violations, 400);
+        // }
 
         $this->entityManager->persist($list);
         $this->entityManager->flush();
@@ -122,8 +113,6 @@ class ListController extends BaseController
             'success' => 'List has been added successfully!',
             'list' => $list
         ];
-
-        $this->cache->invalidateCache(['all-lists']);
 
         return $this->baseView($response);
     }

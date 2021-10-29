@@ -48,21 +48,27 @@ class Tasks
     private $run_at;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Lists", inversedBy="tasks", cascade={"all"}, fetch="EAGER")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Lists", inversedBy="tasks", cascade={"all"})
      * @ORM\JoinColumn(nullable=false)
      * @Assert\NotBlank(message = "List is required", allowNull = false)
      */
     private $list;
 
     /**
-     * @ORM\Column(type="boolean", options={"default": 0})
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="tasks", cascade={"all"})
+     * @ORM\JoinColumn(nullable=false)
      */
-    private $is_done = 0;
+    private $user;
 
     /**
      * @ORM\Column(type="boolean", options={"default": 0})
      */
-    private $is_notified = 0;
+    private $isDone = 0;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default": 0})
+     */
+    private $isNotified = 0;
 
     public function getId(): ?int
     {
@@ -148,26 +154,38 @@ class Tasks
         return $this;
     }
 
-    public function getIsDone(): ?bool
+    public function getUser(): ?User
     {
-        return $this->is_done;
+        return $this->user;
     }
 
-    public function setIsDone(bool $is_done): self
+    public function setUser(?User $user): self
     {
-        $this->is_done = $is_done;
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getIsDone(): bool
+    {
+        return $this->isDone;
+    }
+
+    public function setIsDone(?bool $isDone): self
+    {
+        $this->isDone = $isDone;
 
         return $this;
     }
 
     public function getIsNotified(): ?bool
     {
-        return $this->is_notified;
+        return $this->isNotified;
     }
 
-    public function setIsNotified(bool $is_notified): self
+    public function setIsNotified(?bool $isNotified): self
     {
-        $this->is_notified = $is_notified;
+        $this->isNotified = $isNotified;
 
         return $this;
     }

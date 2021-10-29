@@ -70,9 +70,15 @@ class User implements UserInterface
      */
     private $lists;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Tasks", mappedBy="user")
+     */
+    private $tasks;
+
     public function __construct()
     {
         $this->lists = new ArrayCollection();
+        $this->tasks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -214,6 +220,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($list->getUser() === $this) {
                 $list->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Tasks[]
+     */
+    public function getTasks(): Collection
+    {
+        return $this->tasks;
+    }
+
+    public function addTask(Tasks $task): self
+    {
+        if (!$this->tasks->contains($task)) {
+            $this->tasks[] = $task;
+            $task->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTask(Tasks $task): self
+    {
+        if ($this->tasks->contains($task)) {
+            $this->tasks->removeElement($task);
+            // set the owning side to null (unless already changed)
+            if ($task->getUser() === $this) {
+                $task->setUser(null);
             }
         }
 

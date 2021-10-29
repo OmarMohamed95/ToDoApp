@@ -4,8 +4,11 @@ namespace App\Repository;
 
 use App\Entity\Tasks;
 use App\Entity\Lists;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method Tasks|null find($id, $lockMode = null, $lockVersion = null)
@@ -21,7 +24,7 @@ class TasksRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Tasks[] Returns an array of Tasks objects
+     * @return mixed
      */
     public function getAllUnnotifiedTasks($id)
     {
@@ -39,7 +42,7 @@ class TasksRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Tasks[] Returns an array of Tasks objects ordered by run_at DESC 
+     * @return QueryBuilder
      */
     public function getAllByRunAtQuery($id, $order)
     {
@@ -53,7 +56,7 @@ class TasksRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Tasks[] Returns an array of Tasks objects ordered by priority 
+     * @return QueryBuilder
      */
     public function getAllByPriorityQuery($id, $order)
     {
@@ -66,15 +69,23 @@ class TasksRepository extends ServiceEntityRepository
         ;
     }
 
-    /*
-    public function findOneBySomeField($value): ?Tasks
+    /**
+     * @param int $userId
+     *
+     * @return Query
+     */
+    public function getTasksByUser(int $userId)
     {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
+        $queryBuilder = $this->createQueryBuilder('task');
+        
+        $queryBuilder->andWhere('task.user = :user')
+            ->andWhere($queryBuilder->expr()->eq('task.isDone', ':isDone'))
+            ->setParameter('user', $userId)
+            ->setParameter('isDone', false)
         ;
+        
+        $queryBuilder->orderBy('task.priority', 'desc');
+
+        return $queryBuilder->getQuery();
     }
-    */
 }
