@@ -86,10 +86,10 @@ class TaskController extends BaseController
         );
 
         if (!$pagination->getTotalItemCount()) {
-            return $this->baseView(null, Response::HTTP_NO_CONTENT);
+            return $this->respondNoContent();
         }
 
-        return $this->baseView($pagination);
+        return $this->respond($pagination);
     }
 
     /**
@@ -116,10 +116,10 @@ class TaskController extends BaseController
         );
         
         if (!$results) {
-            return $this->baseView(null, 204);
+            return $this->respondNoContent(null, 204);
         }
 
-        return $this->baseView($results);
+        return $this->respond($results);
     }
 
     /**
@@ -139,7 +139,7 @@ class TaskController extends BaseController
 
         $this->cache->invalidateCache(['unnotified-tasks']);
 
-        return $this->baseView([], 204);
+        return $this->respond();
     }
 
     /**
@@ -156,10 +156,10 @@ class TaskController extends BaseController
         $results = $this->tasksRepo->findOneBy(['id' => $id]);
 
         if (!$results) {
-            return $this->baseView($results, 204);
+            return $this->respondNoContent();
         }
 
-        return $this->baseView($results);
+        return $this->respond($results);
     }
 
     /**
@@ -212,7 +212,7 @@ class TaskController extends BaseController
         if (count($errors) > 0) {
             $violations = $validationService->identifyErrors($errors);
 
-            return $this->baseView($violations, 400);
+            return $this->respond($violations, Response::HTTP_BAD_REQUEST);
         }
 
         $this->entityManager->flush();
@@ -224,7 +224,7 @@ class TaskController extends BaseController
         // check if the tag or the key exists first before invalidating the cache
         $this->cache->invalidateCache(['all-tasks', 'unnotified-tasks']);
         
-        return $this->baseView($response);
+        return $this->respond($response);
     }
 
     /**
@@ -285,6 +285,6 @@ class TaskController extends BaseController
         // check if the tag or the key exists first before invalidating the cache
         $this->cache->invalidateCache(['all-tasks', 'unnotified-tasks']);
         
-        return $this->baseView($response, 201);
+        return $this->respond($response, Response::HTTP_CREATED);
     }
 }

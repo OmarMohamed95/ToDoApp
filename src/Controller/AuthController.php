@@ -46,7 +46,7 @@ class AuthController extends BaseController
             $response = ['isAuthenticated' => false];
         }
         
-        return $this->baseView($response);
+        return $this->respond($response);
     }
 
     /**
@@ -63,10 +63,10 @@ class AuthController extends BaseController
         $currentUser = $user->getCurrentUser(['id' => 'getId', 'username' => 'getUsername']);
 
         if ($currentUser === null) {
-            return $this->baseView(null, 204);
+            return $this->respondNoContent();
         }
 
-        return $this->baseView($currentUser);
+        return $this->respond($currentUser);
     }
 
     /**
@@ -88,6 +88,6 @@ class AuthController extends BaseController
 
         // $refreshToken = $this->request->cookies->get('REFRESH_TOKEN');
         
-        return $this->baseView(['message' => 'logged out successfully']);
+        return $this->respond(['message' => 'logged out successfully']);
     }
 }

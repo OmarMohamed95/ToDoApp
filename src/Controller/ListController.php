@@ -67,10 +67,10 @@ class ListController extends BaseController
         ]);
 
         if (!$lists) {
-            return $this->baseView(null, 204);
+            return $this->respondNoContent();
         }
 
-        return $this->baseView($lists);
+        return $this->respond($lists);
     }
 
     /**
@@ -114,6 +114,6 @@ class ListController extends BaseController
             'list' => $list
         ];
 
-        return $this->baseView($response);
+        return $this->respond($response);
     }
 }

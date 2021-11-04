@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 abstract class BaseController extends AbstractFOSRestController
 {
     /**
-     * Base view
+     * Respond to API
      *
      * @param mixed $data
      * @param int $statusCode
@@ -25,9 +25,20 @@ abstract class BaseController extends AbstractFOSRestController
      *
      * @return Response
      */
-    public function baseView($data = null, int $statusCode = 200, array $headers = [])
+    public function respond($data = null, int $statusCode = 200, array $headers = [])
     {
         $view = $this->view($data, $statusCode, $headers);
+        return $this->handleView($view);
+    }
+
+    /**
+     * Respond with no content
+     *
+     * @return Response
+     */
+    public function respondNoContent()
+    {
+        $view = $this->view(null, Response::HTTP_NO_CONTENT);
         return $this->handleView($view);
     }
 }

@@ -43,6 +43,6 @@ class RegisterController extends BaseController
             $userService->generateAccessToken();
         }
 
-        return $this->baseView($response['message'], $response['statusCode']);
+        return $this->respond($response['message'], $response['statusCode']);
     }
 }
