@@ -72,15 +72,16 @@ class TaskController extends BaseController
         PaginatorInterface $paginator,
         TaskService $taskService
     ) {
-        $pageNumber = $request->query->getInt('page', 1);
-        $sort = $request->query->get('sort', 'run_at');
-        $order = $request->query->get('order', 'desc');
+        $criteria = [
+            'sort' => $request->query->get('sort', 'run_at'),
+            'order' => $request->query->get('order', 'desc')
+        ];
         
-        $tasksQuery = $taskService->getTasksByUser($this->getUser());
+        $tasksQuery = $taskService->getTasksByUser($this->getUser(), $criteria);
 
         $pagination = $paginator->paginate(
             $tasksQuery,
-            $pageNumber,
+            $request->query->getInt('page', 1),
             10
         );
 

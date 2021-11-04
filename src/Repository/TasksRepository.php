@@ -71,10 +71,11 @@ class TasksRepository extends ServiceEntityRepository
 
     /**
      * @param int $userId
+     * @param array $criteria
      *
      * @return Query
      */
-    public function getTasksByUser(int $userId)
+    public function getTasksByUser(int $userId, array $criteria)
     {
         $queryBuilder = $this->createQueryBuilder('task');
         
@@ -83,8 +84,10 @@ class TasksRepository extends ServiceEntityRepository
             ->setParameter('user', $userId)
             ->setParameter('isDone', false)
         ;
-        
-        $queryBuilder->orderBy('task.priority', 'desc');
+
+        $sort = $criteria['sort'] ?? 'priority';
+        $order = $criteria['order'] ?? 'desc';
+        $queryBuilder->orderBy("task.$sort", $order);
 
         return $queryBuilder->getQuery();
     }

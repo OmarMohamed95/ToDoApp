@@ -46,11 +46,12 @@ class TaskService extends AbstractController
      * Get all task of a user
      *
      * @param User $user
+     * @param array $criteria
      *
      * @return mixed
      */
-    public function getTasksByUser(User $user)
+    public function getTasksByUser(User $user, array $criteria)
     {
-        return $this->taskRepository->getTasksByUser($user->getId());
+        return $this->taskRepository->getTasksByUser($user->getId(), $criteria);
     }
 }
