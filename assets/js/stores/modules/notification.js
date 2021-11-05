@@ -100,7 +100,7 @@ export default {
         updateNotifyStatus: (context, id) => {
             axios({
                 method: 'patch',
-                url: `http://127.0.0.1:8000/api/task/notified/${id}`,
+                url: `http://127.0.0.1:8000/api/task/${id}/notification`,
             })
         },
         askPermission: (context) => {

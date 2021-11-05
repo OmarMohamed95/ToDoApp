@@ -7,6 +7,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tasks;
 use App\Entity\Lists;
+use App\Exception\UnauthorizedTaskUser;
 use App\Repository\TasksRepository;
 use App\Util\CacheInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,14 +15,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\RequestParam;
-use FOS\RestBundle\Controller\Annotations\QueryParam;
-use FOS\RestBundle\Controller\Annotations\FileParam;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\Serializer\SerializerService;
 use App\Service\TaskService;
-use App\Service\UserService;
 use App\Service\ValidationService;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * TaskController
@@ -40,21 +38,26 @@ class TaskController extends BaseController
     /** @var CacheInterface */
     private $cache;
 
-    /** @var UserService */
-    private $user;
+    /** @var TranslatorInterface */
+    private $translator;
+
+    /** @var TaskService */
+    private $taskService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         TasksRepository $tasksRepo,
         SerializerService $serializer,
         CacheInterface $redisCache,
-        UserService $user
+        TranslatorInterface $translator,
+        TaskService $taskService
     ) {
         $this->entityManager = $entityManager;
         $this->tasksRepo = $tasksRepo;
         $this->serializer = $serializer->init();
         $this->cache = $redisCache;
-        $this->user = $user;
+        $this->translator = $translator;
+        $this->taskService = $taskService;
     }
 
     /**
@@ -69,15 +72,14 @@ class TaskController extends BaseController
      */
     public function getAllTasks(
         Request $request,
-        PaginatorInterface $paginator,
-        TaskService $taskService
+        PaginatorInterface $paginator
     ) {
         $criteria = [
             'sort' => $request->query->get('sort', 'run_at'),
             'order' => $request->query->get('order', 'desc')
         ];
         
-        $tasksQuery = $taskService->getTasksByUser($this->getUser(), $criteria);
+        $tasksQuery = $this->taskService->getTasksByUser($this->getUser(), $criteria);
 
         $pagination = $paginator->paginate(
             $tasksQuery,
@@ -101,45 +103,40 @@ class TaskController extends BaseController
      */
     public function getUnnotifiedTasks()
     {
-        $results = $this->cache->cache(
-            'unnotified-tasks',
-            120,
-            ['all-cached-values', 'unnotified-tasks'],
-            function () {
-                return $this->tasksRepo->getAllUnnotifiedTasks(
-                    $this
-                    ->user
-                    ->getCurrentUser()
-                    ->getId()
-                );
-            }
-        );
-        
-        if (!$results) {
-            return $this->respondNoContent(null, 204);
+        $unnotifiedTasks = $this->taskService->getUnnotifiedTasks($this->getUser());
+
+        if (!$unnotifiedTasks) {
+            return $this->respondNoContent();
         }
 
-        return $this->respond($results);
+        return $this->respond($unnotifiedTasks);
     }
 
     /**
      * Update notify status
      *
-     * @Route("/api/task/notified/{id}", name="update_notify_status", methods={"PATCH"})
+     * @Route("/api/task/{task}/notification", name="update_notify_status", methods={"PATCH"})
      *
-     * @param int $id
+     * @param Tasks $task
      *
      * @return Response
      */
-    public function updateNotifyStatus(int $id)
+    public function updateNotifyStatus(Tasks $task)
     {
-        $obj = $this->tasksRepo->find($id);
-        $obj->setIsNotified(true);
-        $this->entityManager->flush();
+        try {
+            $this->taskService->updateNotifyStatus($task, true);
+        } catch (UnauthorizedTaskUser $th) {
+            $this->respond(
+                [
+                    'status_message' => $this->translator->trans('task.errors.unauthorized_user')
+                ],
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
 
-        $this->cache->invalidateCache(['unnotified-tasks']);
-
-        return $this->respond();
+        return $this->respond([
+            'status_message' => $this->translator->trans('task.messages.successfully_notify_updated')
+        ]);
     }
 
     /**

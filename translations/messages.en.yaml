@@ -1,0 +1,5 @@
+task:
+  errors:
+    unauthorized_user: 'The current user is not allowed to update the task'
+  messages:
+    successfully_notify_updated: 'Task has been updated successfully'
