@@ -69,10 +69,11 @@ class TaskService extends AbstractController
      * Update notify status of a task
      *
      * @param Tasks $task
+     * @param bool $status
      *
      * @return mixed
      */
-    public function updateNotifyStatus(Tasks $task)
+    public function updateNotifyStatus(Tasks $task, bool $status = true)
     {
         $isTaskOwner = $this->isTaskOwner($task);
 
@@ -80,7 +81,7 @@ class TaskService extends AbstractController
             return;
         }
 
-        $task->setIsNotified(true);
+        $task->setIsNotified($status);
         $this->entityManager->flush();
     }
 
